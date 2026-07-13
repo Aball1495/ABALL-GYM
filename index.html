@@ -304,6 +304,57 @@
   .swap-item-muscle { font-size: 11px; color: var(--text3); }
   .swap-search { margin: 10px 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 10px 14px; width: calc(100% - 40px); }
   .swap-search:focus { outline: none; border-color: var(--accent); }
+
+  /* NEXT SESSION RECOMMENDATIONS */
+  .rec-card { background: var(--surface); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .rec-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
+  .rec-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .rec-subtitle { font-size: 12px; color: var(--text2); }
+  .rec-chevron { color: var(--text3); font-size: 18px; transition: transform 0.2s; }
+  .rec-card.open .rec-chevron { transform: rotate(90deg); }
+  .rec-list { display: none; }
+  .rec-card.open .rec-list { display: block; }
+  .rec-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-bottom: 0.5px solid var(--border); }
+  .rec-row:last-child { border-bottom: none; }
+  .rec-ex-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .rec-target { font-size: 12px; margin-top: 2px; }
+  .rec-target.up { color: var(--accent); }
+  .rec-target.hold { color: var(--text2); }
+  .rec-target.band { color: #f5a623; }
+  .rec-last { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .rec-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .rec-badge-up { background: rgba(200,241,53,0.12); color: var(--accent); border: 1px solid rgba(200,241,53,0.25); }
+  .rec-badge-hold { background: var(--surface2); color: var(--text2); }
+  .rec-badge-band { background: rgba(245,166,35,0.12); color: #f5a623; border: 1px solid rgba(245,166,35,0.25); }
+  .rec-badge-first { background: rgba(91,156,246,0.12); color: #5b9cf6; border: 1px solid rgba(91,156,246,0.25); }
+
+  /* SUPERSETS */
+  .superset-group { border-left: 3px solid #5b9cf6; margin-left: 4px; border-radius: 0 var(--radius) var(--radius) 0; }
+  .superset-group .ex-row:first-child { border-radius: 0 var(--radius) 0 0; }
+  .superset-group .ex-row:last-child { border-radius: 0 0 var(--radius) 0; border-bottom: none; }
+  .superset-label { font-size: 10px; font-weight: 600; color: #5b9cf6; text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 16px 2px; background: rgba(91,156,246,0.06); }
+  .superset-rest-label { font-size: 11px; color: #5b9cf6; padding: 4px 16px 6px; background: rgba(91,156,246,0.06); border-bottom: 1px solid var(--border); }
+  .ss-badge { display: inline-block; font-size: 10px; font-weight: 600; background: rgba(91,156,246,0.12); color: #5b9cf6; border: 1px solid rgba(91,156,246,0.25); border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+  /* Edit mode superset controls */
+  .ex-edit-ss-row { display: flex; align-items: center; gap: 8px; padding: 6px 16px 8px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .ss-group-btn { background: rgba(91,156,246,0.12); border: 1px solid rgba(91,156,246,0.3); color: #5b9cf6; font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+  .ss-ungroup-btn { background: rgba(224,75,75,0.1); border: 1px solid rgba(224,75,75,0.3); color: #e04b4b; font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+  .ss-group-label { font-size: 11px; color: var(--text3); }
+
+  /* EXPORT / IMPORT */
+  .data-section { padding: 16px; }
+  .data-btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .data-btn { flex: 1; padding: 14px; border-radius: var(--radius); border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .data-btn-export { background: var(--accent); color: #000; }
+  .data-btn-import { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .data-info { font-size: 12px; color: var(--text2); line-height: 1.6; padding: 12px 0; border-top: 1px solid var(--border); }
+  .data-stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .data-stat-row:last-child { border-bottom: none; }
+  .data-stat-label { color: var(--text2); }
+  .data-stat-val { font-weight: 600; color: var(--text); }
+  .import-status { font-size: 13px; padding: 10px 0; text-align: center; }
+  .import-status.ok { color: var(--accent); }
+  .import-status.err { color: #e04b4b; }
 </style>
 </head>
 <body>
@@ -325,6 +376,7 @@
     <div class="tab" onclick="showPage('history')">History</div>
     <div class="tab" onclick="showPage('progress')">Progress</div>
     <div class="tab" onclick="showPage('bodyweight')">Body</div>
+    <div class="tab" onclick="showPage('data')">Data</div>
   </div>
 </div>
 
@@ -336,6 +388,7 @@
       <div class="deload-sub">You've been training consistently for 8+ weeks. Consider dropping volume and intensity by ~40% this week to recover and come back stronger.</div>
     </div>
 
+    <div id="rec-fri"></div>
     <div class="day-card" id="card-fri">
       <div class="day-header" id="header-fri" onclick="toggleDay('card-fri')">
         <div class="day-dot dot-push"></div>
@@ -346,6 +399,7 @@
       <div class="day-exercises" id="exercises-fri"></div>
     </div>
 
+    <div id="rec-sat"></div>
     <div class="day-card" id="card-sat">
       <div class="day-header" id="header-sat" onclick="toggleDay('card-sat')">
         <div class="day-dot dot-lower"></div>
@@ -356,6 +410,7 @@
       <div class="day-exercises" id="exercises-sat"></div>
     </div>
 
+    <div id="rec-sun"></div>
     <div class="day-card" id="card-sun">
       <div class="day-header" id="header-sun" onclick="toggleDay('card-sun')">
         <div class="day-dot dot-pull"></div>
@@ -376,6 +431,21 @@
   <!-- PROGRESS PAGE -->
   <div class="page" id="page-progress">
     <div id="progress-content"></div>
+  </div>
+
+  <!-- DATA PAGE -->
+  <div class="page" id="page-data">
+    <div class="data-section">
+      <div class="section-label-inline" style="padding:0 0 10px">Backup &amp; restore</div>
+      <div class="data-btn-row">
+        <button class="data-btn data-btn-export" onclick="exportData()">⬇ Export backup</button>
+        <button class="data-btn data-btn-import" onclick="document.getElementById('import-file').click()">⬆ Import backup</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
+      <div id="import-status"></div>
+      <div id="data-stats"></div>
+      <div class="data-info">Export saves all your workout logs, bodyweight entries and custom program changes as a JSON file to your phone. Import restores from a previously exported file. Your current data is not overwritten until you confirm.</div>
+    </div>
   </div>
 
   <!-- BODYWEIGHT PAGE -->
@@ -702,9 +772,9 @@ const PROGRAM = {
       { id: 'squat',    name: 'Barbell back squat',        sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'quads',     anchor: true },
       { id: 'rdl',      name: 'Romanian deadlift',         sets: 3, reps: 8,  equip: 'Open deadlift bar',        muscle: 'hamstrings' },
       { id: 'lm-squat', name: 'Landmine squat',            sets: 3, reps: 8,  equip: 'Landmine · barbell',       muscle: 'quads' },
-      { id: 'bss',      name: 'DB Bulgarian split squat',  sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'quads',     note: 'Each leg' },
-      { id: 'pull-thru',name: 'Cable pull-through',        sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'glutes' },
       { id: 'band-curl',name: 'Band leg curl',             sets: 3, reps: 8,  equip: 'Long band · anchor',       muscle: 'hamstrings' },
+      { id: 'pull-thru',name: 'Cable pull-through',        sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'glutes' },
+      { id: 'bss',      name: 'DB Bulgarian split squat',  sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'quads',     note: 'Each leg' },
       { id: 'calf',     name: 'Standing calf raise',       sets: 4, reps: 20, equip: 'Weight rack or dumbbells', muscle: 'calves' },
     ]
   },
@@ -715,11 +785,11 @@ const PROGRAM = {
     exercises: [
       { id: 'pullup',   name: 'Band assisted pull-up',     sets: 4, reps: 8,  equip: 'Pull-up bar · long band',   muscle: 'lats',    anchor: true },
       { id: 'pendlay',  name: 'Curl bar Pendlay row',      sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'back' },
-      { id: 'floor-press',name:'DB floor press',           sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest' },
       { id: 'ring-row', name: 'Ring row',                  sets: 3, reps: 8,  equip: 'Rings',                    muscle: 'back' },
+      { id: 'floor-press',name:'DB floor press',           sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest' },
+      { id: 'preacher', name: 'Curl bar preacher curl',    sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'biceps' },
       { id: 'cable-tri-oh', name: 'Cable overhead tricep extension', sets: 3, reps: 8, equip: 'Cable machine',   muscle: 'triceps' },
       { id: 'face-pull',name: 'Cable face pull',           sets: 3, reps: 20, equip: 'Cable machine · rope',     muscle: 'rear-delts' },
-      { id: 'preacher', name: 'Curl bar preacher curl',    sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'biceps' },
       { id: 'band-tri', name: 'Band overhead tricep ext.', sets: 3, reps: 15, equip: 'Long band',                muscle: 'triceps' },
     ]
   }
@@ -748,6 +818,14 @@ function getLastSets(exId) {
   }
   return null;
 }
+function getLastExerciseLog(exId) {
+  const log = getLog();
+  for (let i = log.length - 1; i >= 0; i--) {
+    const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
+    if (ex) return ex;
+  }
+  return null;
+}
 function getLastWorkingWeight(exId) {
   const last = getLastSets(exId);
   if (!last) return null;
@@ -769,6 +847,23 @@ function getSuggestedNext(exId) {
   const maxW = Math.max(...last.map(s => parseFloat(s.weight) || 0));
   if (!maxW) return null;
   return { current: maxW, next: maxW + 5, reps: last[0] ? last[0].reps : currentEx.reps };
+}
+
+function renderExRow(dayKey, ex) {
+  const last = getLastSets(ex.id);
+  const lastText = last ? last.filter(s=>!s.isWarmup).map(s => s.weight ? s.weight + 'lb' : '—').join(' / ') : 'No history';
+  const libMatch = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
+  const aceUrl = libMatch && libMatch.ace ? ACE_BASE + libMatch.ace + '/' : null;
+  const ssTag = ex.supersetGroup ? '<span class="ss-badge">SS</span>' : '';
+  return `<div class="ex-row" onclick="openModal('${dayKey}','${ex.id}')">
+    <div class="muscle-icon">${muscleSVG(ex.muscle)}</div>
+    <div class="ex-info">
+      <div class="ex-name">${ex.name}${ex.anchor ? ' ★' : ''}${ssTag}${aceUrl ? ` <a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;vertical-align:middle">ACE ↗</a>` : ''}</div>
+      <div class="ex-scheme">${ex.sets}×${ex.reps}${ex.note ? ' · ' + ex.note : ''} · ${ex.equip}${get1RM(ex.id) ? `<span class="orm-badge">~${get1RM(ex.id)} lb 1RM</span>` : ''}</div>
+    </div>
+    <div class="ex-last">${lastText}</div>
+    <div class="ex-arrow">›</div>
+  </div>`;
 }
 
 function toggleDay(id) {
@@ -825,6 +920,15 @@ function openModal(dayKey, exId) {
   });
 
   selectedBands = [];
+
+  // Load last note for this exercise
+  const notesEl = document.getElementById('session-notes');
+  if (notesEl) {
+    const lastEx = getLastExerciseLog(ex.id);
+    notesEl.value = lastEx && lastEx.notes ? lastEx.notes : '';
+    notesEl.placeholder = lastEx && lastEx.notes ? 'Last note: ' + lastEx.notes.substring(0,40) + (lastEx.notes.length > 40 ? '...' : '') : 'How did this feel? Form cues to remember...';
+  }
+
   renderSets();
   renderBandPicker();
   document.getElementById('modal').classList.add('open');
@@ -957,6 +1061,7 @@ function saveLog() {
 
   closeModal();
   renderProgram();
+  renderAllRecs();
 }
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
@@ -1081,6 +1186,7 @@ function showPage(name) {
   if (name === 'history') renderHistory();
   if (name === 'progress') renderProgress();
   if (name === 'bodyweight') renderBodyweight();
+  if (name === 'data') renderDataStats();
 }
 
 function confirmClear() {
@@ -1101,30 +1207,62 @@ let timerInterval = null;
 let timerRemaining = 0;
 let timerTotal = 0;
 let timerRunning = false;
+let timerEndTime = null; // absolute end time for background accuracy
 const CIRCUMFERENCE = 125.6;
+
+// Request notification permission on first timer use
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function fireNotification(label) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification("AL'S GYM", {
+      body: label + ' — rest complete, next set!',
+      icon: '',
+      tag: 'rest-timer',
+      renotify: true,
+      silent: false
+    });
+  } catch(e) {}
+}
 
 function startTimer(seconds) {
   clearInterval(timerInterval);
   timerTotal = seconds;
   timerRemaining = seconds;
   timerRunning = true;
+  timerEndTime = Date.now() + seconds * 1000;
   document.getElementById('timer-bar').classList.add('active');
   document.getElementById('timer-main-btn').textContent = 'Pause';
   updateTimerDisplay();
+
+  // Request notification permission silently on first use
+  requestNotifPermission();
+
   timerInterval = setInterval(() => {
     if (!timerRunning) return;
-    timerRemaining--;
+    // Use wall clock for accuracy when tab is backgrounded
+    const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+    timerRemaining = remaining;
     if (timerRemaining <= 0) {
       timerRemaining = 0;
       timerRunning = false;
       clearInterval(timerInterval);
       document.getElementById('timer-count').classList.add('done');
       document.getElementById('timer-main-btn').textContent = 'Done';
-      document.getElementById('timer-label').textContent = 'Rest complete';
+      const label = document.getElementById('timer-label').textContent;
+      document.getElementById('timer-label').textContent = 'Rest complete ✓';
       try { navigator.vibrate && navigator.vibrate([200,100,200]); } catch(e) {}
+      fireNotification(label);
     }
     updateTimerDisplay();
-  }, 1000);
+  }, 500); // 500ms interval so it catches zero quickly even when throttled
 }
 
 function updateTimerDisplay() {
@@ -1142,14 +1280,36 @@ function toggleTimer() {
     return;
   }
   timerRunning = !timerRunning;
+  if (timerRunning) {
+    // Recalculate end time based on remaining when resuming
+    timerEndTime = Date.now() + timerRemaining * 1000;
+  }
   document.getElementById('timer-main-btn').textContent = timerRunning ? 'Pause' : 'Resume';
 }
 
 function skipTimer() {
   clearInterval(timerInterval);
   timerRunning = false;
+  timerEndTime = null;
   document.getElementById('timer-bar').classList.remove('active');
 }
+
+// Re-sync timer when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && timerRunning && timerEndTime) {
+    const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+    timerRemaining = remaining;
+    if (timerRemaining <= 0) {
+      timerRemaining = 0;
+      timerRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('timer-count').classList.add('done');
+      document.getElementById('timer-main-btn').textContent = 'Done';
+      document.getElementById('timer-label').textContent = 'Rest complete ✓';
+    }
+    updateTimerDisplay();
+  }
+});
 
 function getTimerSettings() {
   try {
@@ -1219,9 +1379,22 @@ function toggleSet(i) {
   setStates[i].done = !setStates[i].done;
   renderSets();
   if (!wasDone && setStates[i].done && currentEx) {
-    const dur = getTimerDuration(currentEx.id);
+    let dur = getTimerDuration(currentEx.id);
+    let label = 'Rest — next set in';
+    if (currentEx.supersetGroup && currentDay) {
+      // Check if this is the last exercise in the superset group
+      const groupExes = PROGRAM[currentDay].exercises.filter(e => e.supersetGroup === currentEx.supersetGroup);
+      const lastInGroup = groupExes[groupExes.length - 1].id === currentEx.id;
+      if (lastInGroup) {
+        dur = getSupersetTimerDuration(currentEx.supersetGroup, currentDay);
+        label = 'Superset rest';
+      } else {
+        dur = 15; // short transition between superset exercises
+        label = 'Quick switch →';
+      }
+    }
     if (dur > 0) {
-      document.getElementById('timer-label').textContent = `Rest — next set in`;
+      document.getElementById('timer-label').textContent = label;
       startTimer(dur);
     }
   }
@@ -1425,20 +1598,19 @@ function renderProgram() {
       html += `<div class="add-ex-row" onclick="addExercise('${dayKey}')">+ Add exercise</div>`;
       container.innerHTML = html;
     } else {
-      container.innerHTML = day.exercises.map(ex => {
-        const last = getLastSets(ex.id);
-        const lastText = last ? last.filter(s=>!s.isWarmup).map(s => s.weight ? s.weight + 'lb' : '—').join(' / ') : 'No history';
-        const libMatch = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
-        const aceUrl = libMatch && libMatch.ace ? ACE_BASE + libMatch.ace + '/' : null;
-        return `<div class="ex-row" onclick="openModal('${dayKey}','${ex.id}')">
-          <div class="muscle-icon">${muscleSVG(ex.muscle)}</div>
-          <div class="ex-info">
-            <div class="ex-name">${ex.name}${ex.anchor ? ' ★' : ''}${aceUrl ? ` <a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;vertical-align:middle">ACE ↗</a>` : ''}</div>
-            <div class="ex-scheme">${ex.sets}×${ex.reps}${ex.note ? ' · ' + ex.note : ''} · ${ex.equip}${get1RM(ex.id) ? `<span class="orm-badge">~${get1RM(ex.id)} lb 1RM</span>` : ''}</div>
-          </div>
-          <div class="ex-last">${lastText}</div>
-          <div class="ex-arrow">›</div>
-        </div>`;
+      const grouped = groupExercisesForRender(dayKey);
+      container.innerHTML = grouped.map(item => {
+        if (item.type === 'single') {
+          const ex = item.exercises[0].ex;
+          return renderExRow(dayKey, ex);
+        } else {
+          const ssRows = item.exercises.map(e => renderExRow(dayKey, e.ex)).join('');
+          return `<div class="superset-group">
+            <div class="superset-label">Superset</div>
+            ${ssRows}
+            <div class="superset-rest-label">Rest after completing all exercises above</div>
+          </div>`;
+        }
       }).join('');
     }
   });
@@ -1469,6 +1641,10 @@ function buildEditRow(dayKey, exIdx, ex) {
     </div>
     <div class="ex-edit-actions">
       <button class="swap-btn" onclick="openSwap('${dayKey}',${exIdx})">⇄ Swap</button>
+      ${ex.supersetGroup
+        ? `<button class="ss-ungroup-btn" onclick="removeFromSupersetGroup('${dayKey}',${exIdx})">✕ Ungroup</button>`
+        : `<button class="ss-group-btn" onclick="openSupersetPicker('${dayKey}',${exIdx})">+ Superset</button>`
+      }
       <button class="ex-edit-save" onclick="saveExerciseEdit('${dayKey}',${exIdx})">Save</button>
       <button class="ex-edit-del" onclick="deleteExercise('${dayKey}',${exIdx})">Remove</button>
     </div>
@@ -1682,6 +1858,52 @@ function checkDeload() {
   if (banner) banner.classList.toggle('visible', weeksSince >= 8);
 }
 
+
+// ── SUPERSET PICKER ───────────────────────────────────────────────────────────
+let ssPickerTarget = null;
+
+function openSupersetPicker(dayKey, exIdx) {
+  ssPickerTarget = { dayKey, exIdx };
+  const ex = PROGRAM[dayKey].exercises[exIdx];
+  document.getElementById('ss-picker-sub').textContent = 'Pairing with: ' + ex.name;
+  // List all other exercises in same day that could be grouped
+  const others = PROGRAM[dayKey].exercises
+    .map((e, i) => ({ ex: e, idx: i }))
+    .filter(e => e.idx !== exIdx);
+  document.getElementById('ss-picker-list').innerHTML = others.map(e => {
+    const alreadyGrouped = e.ex.supersetGroup && e.ex.supersetGroup === ex.supersetGroup;
+    return `<div class="swap-item" onclick="pairSuperset('${dayKey}',${exIdx},${e.idx})">
+      <div>
+        <div class="swap-item-name">${e.ex.name}</div>
+        <div class="swap-item-muscle">${e.ex.muscle}${e.ex.supersetGroup ? ' · already in a group' : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('ss-picker-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function pairSuperset(dayKey, exIdx1, exIdx2) {
+  const ex1 = PROGRAM[dayKey].exercises[exIdx1];
+  const ex2 = PROGRAM[dayKey].exercises[exIdx2];
+  // Use existing group if one has one, otherwise create new
+  const groupId = ex1.supersetGroup || ex2.supersetGroup || (dayKey + '-ss-' + Date.now());
+  ex1.supersetGroup = groupId;
+  ex2.supersetGroup = groupId;
+  saveProgram();
+  closeSupersetPicker();
+  renderProgram();
+}
+
+function closeSupersetPicker() {
+  document.getElementById('ss-picker-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  ssPickerTarget = null;
+}
+
+function closeSupersetPickerOutside(e) {
+  if (e.target === document.getElementById('ss-picker-modal')) closeSupersetPicker();
+}
 // ── BAND COLORS ───────────────────────────────────────────────────────────────
 const BAND_COLORS = [
   { name: 'Yellow',  hex: '#f5d800', resistance: '5–15 lb' },
@@ -1810,11 +2032,279 @@ function confirmSwap(name, muscle) {
   renderProgram();
 }
 
+
+// ── NEXT SESSION RECOMMENDATIONS ─────────────────────────────────────────────
+const BAND_ORDER = ['Gray','Yellow','Orange','Red','Blue','Purple','Black','Green'];
+
+function getLastSession(dayKey) {
+  const log = getLog();
+  for (let i = log.length - 1; i >= 0; i--) {
+    if (log[i].day === dayKey) return log[i];
+  }
+  return null;
+}
+
+function getExRec(ex, lastSession) {
+  const lastEx = lastSession && (lastSession.exercises || []).find(e => e.id === ex.id);
+
+  // Band exercise
+  if (isBandExercise(ex)) {
+    if (!lastEx || !lastEx.bands || !lastEx.bands.length) {
+      return { type: 'first', text: 'First session — start light', badge: 'first' };
+    }
+    const lastBands = lastEx.bands;
+    // Suggest next band up if all reps completed
+    const allDone = (lastEx.sets || []).filter(s=>!s.isWarmup).every(s => s.done !== false);
+    const topBand = lastBands.reduce((top, b) => {
+      const ti = BAND_ORDER.indexOf(top);
+      const bi = BAND_ORDER.indexOf(b);
+      return bi > ti ? b : top;
+    }, lastBands[0]);
+    const topIdx = BAND_ORDER.indexOf(topBand);
+    if (allDone && topIdx < BAND_ORDER.length - 1) {
+      const next = BAND_ORDER[topIdx + 1];
+      return { type: 'band', text: `Try ${next} band (step up from ${topBand})`, badge: 'band', last: lastBands.join(' + ') };
+    }
+    return { type: 'band', text: `Stay on ${lastBands.join(' + ')} band`, badge: 'hold', last: lastBands.join(' + ') };
+  }
+
+  // Weighted exercise
+  const workingSets = lastEx ? (lastEx.sets || []).filter(s => !s.isWarmup) : [];
+  const weights = workingSets.map(s => parseFloat(s.weight)).filter(w => w > 0);
+  const reps = workingSets.map(s => parseInt(s.reps)).filter(r => r > 0);
+
+  if (!lastEx || !weights.length) {
+    return { type: 'first', text: 'No data yet — log first session', badge: 'first' };
+  }
+
+  const maxW = Math.max(...weights);
+  const minReps = Math.min(...reps);
+  const targetReps = ex.reps;
+  const allHitTarget = reps.every(r => r >= targetReps);
+
+  if (allHitTarget) {
+    return {
+      type: 'up',
+      text: `Bump to ${maxW + 5} lb — hit all ${targetReps} reps last time`,
+      badge: 'up',
+      last: `Last: ${maxW} lb`
+    };
+  } else {
+    return {
+      type: 'hold',
+      text: `Stay at ${maxW} lb — missed reps on set(s)`,
+      badge: 'hold',
+      last: `Last: ${maxW} lb, min reps: ${minReps}`
+    };
+  }
+}
+
+function renderRecs(dayKey) {
+  const el = document.getElementById('rec-' + dayKey);
+  if (!el) return;
+  const day = PROGRAM[dayKey];
+  const lastSession = getLastSession(dayKey);
+
+  if (!lastSession) { el.innerHTML = ''; return; }
+
+  const rows = day.exercises.map(ex => {
+    const rec = getExRec(ex, lastSession);
+    const badgeClass = `rec-badge rec-badge-${rec.badge}`;
+    const targetClass = rec.type === 'up' ? 'up' : rec.type === 'band' ? 'band' : rec.type === 'first' ? 'up' : 'hold';
+    return `<div class="rec-row">
+      <div style="flex:1;min-width:0">
+        <div class="rec-ex-name">${ex.name}</div>
+        <div class="rec-target ${targetClass}">${rec.text}</div>
+        ${rec.last ? `<div class="rec-last">${rec.last}</div>` : ''}
+      </div>
+      <div class="${badgeClass}">${rec.type === 'up' ? '↑ Go up' : rec.type === 'band' ? '⇄ Band' : rec.type === 'first' ? 'First' : '→ Hold'}</div>
+    </div>`;
+  }).join('');
+
+  const cardId = `rec-card-${dayKey}`;
+  el.innerHTML = `<div class="rec-card" id="${cardId}">
+    <div class="rec-header" onclick="document.getElementById('${cardId}').classList.toggle('open')">
+      <div>
+        <div class="rec-title">Next session targets</div>
+        <div class="rec-subtitle">${day.name}</div>
+      </div>
+      <div class="rec-chevron">›</div>
+    </div>
+    <div class="rec-list">${rows}</div>
+  </div>`;
+}
+
+function renderAllRecs() {
+  ['fri','sat','sun'].forEach(k => renderRecs(k));
+}
+
+// ── SUPERSETS ─────────────────────────────────────────────────────────────────
+let currentSupersetQueue = []; // exercises remaining in current superset round
+let currentSupersetGroupId = null;
+
+function getSupersetGroups(dayKey) {
+  const exercises = PROGRAM[dayKey].exercises;
+  const groups = {};
+  exercises.forEach((ex, idx) => {
+    if (ex.supersetGroup) {
+      if (!groups[ex.supersetGroup]) groups[ex.supersetGroup] = [];
+      groups[ex.supersetGroup].push({ ex, idx });
+    }
+  });
+  return groups;
+}
+
+function groupExercisesForRender(dayKey) {
+  // Returns array of items: { type: 'single'|'superset', exercises: [...], groupId }
+  const exercises = PROGRAM[dayKey].exercises;
+  const result = [];
+  const seen = new Set();
+  exercises.forEach((ex, idx) => {
+    if (seen.has(idx)) return;
+    if (ex.supersetGroup) {
+      const groupExes = exercises.map((e, i) => ({ ex: e, idx: i })).filter(e => e.ex.supersetGroup === ex.supersetGroup);
+      if (!seen.has(groupExes[0].idx)) {
+        groupExes.forEach(e => seen.add(e.idx));
+        result.push({ type: 'superset', exercises: groupExes, groupId: ex.supersetGroup });
+      }
+    } else {
+      seen.add(idx);
+      result.push({ type: 'single', exercises: [{ ex, idx }] });
+    }
+  });
+  return result;
+}
+
+function addToSupersetGroup(dayKey, exIdx, groupId) {
+  PROGRAM[dayKey].exercises[exIdx].supersetGroup = groupId;
+  saveProgram();
+  renderProgram();
+}
+
+function removeFromSupersetGroup(dayKey, exIdx) {
+  delete PROGRAM[dayKey].exercises[exIdx].supersetGroup;
+  saveProgram();
+  renderProgram();
+}
+
+function createNewSupersetGroup(dayKey, exIdx) {
+  const newId = dayKey + '-ss-' + Date.now();
+  PROGRAM[dayKey].exercises[exIdx].supersetGroup = newId;
+  saveProgram();
+  renderProgram();
+}
+
+function getSupersetTimerDuration(groupId, dayKey) {
+  // Supersets get longer rest — anchor group gets 3.5 min, others get 2 min
+  const exercises = PROGRAM[dayKey] ? PROGRAM[dayKey].exercises : [];
+  const hasAnchor = exercises.some(e => e.supersetGroup === groupId && e.anchor);
+  const s = getTimerSettings();
+  return hasAnchor ? s.anchor + 30 : Math.round(s.compound * 1.5);
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
+function getAllData() {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    workoutLog: JSON.parse(localStorage.getItem('liftlog_v1') || '[]'),
+    bodyweightLog: JSON.parse(localStorage.getItem('liftlog_bw_v1') || '[]'),
+    program: JSON.parse(localStorage.getItem('liftlog_program_v1') || 'null'),
+    timerSettings: JSON.parse(localStorage.getItem('liftlog_timer_v1') || 'null'),
+  };
+}
+
+function exportData() {
+  const data = getAllData();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `alsgym-backup-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  renderDataStats();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.workoutLog) {
+        showImportStatus("Invalid backup file — not a valid AL'S GYM export.", false);
+        return;
+      }
+      const workoutCount = data.workoutLog.length;
+      const bwCount = (data.bodyweightLog || []).length;
+      if (!confirm(`Import backup from ${data.exportedAt ? new Date(data.exportedAt).toLocaleDateString() : 'unknown date'}?
+
+${workoutCount} workout sessions, ${bwCount} bodyweight entries.
+
+This will replace your current data.`)) {
+        event.target.value = '';
+        return;
+      }
+      localStorage.setItem('liftlog_v1', JSON.stringify(data.workoutLog));
+      if (data.bodyweightLog) localStorage.setItem('liftlog_bw_v1', JSON.stringify(data.bodyweightLog));
+      if (data.program) localStorage.setItem('liftlog_program_v1', JSON.stringify(data.program));
+      if (data.timerSettings) localStorage.setItem('liftlog_timer_v1', JSON.stringify(data.timerSettings));
+      showImportStatus(`Imported ${workoutCount} sessions successfully.`, true);
+      loadSavedProgram();
+      renderProgram();
+      renderDayNames();
+      renderAllRecs();
+      renderDataStats();
+      event.target.value = '';
+    } catch(err) {
+      showImportStatus("Failed to read file — make sure it is a valid JSON backup.", false);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showImportStatus(msg, ok) {
+  const el = document.getElementById('import-status');
+  if (el) {
+    el.className = 'import-status ' + (ok ? 'ok' : 'err');
+    el.textContent = msg;
+    setTimeout(() => { el.textContent = ''; }, 5000);
+  }
+}
+
+function renderDataStats() {
+  const el = document.getElementById('data-stats');
+  if (!el) return;
+  const log = getLog();
+  const bw = getBWLog();
+  const firstDate = log.length ? new Date(log[0].date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+  const lastDate = log.length ? new Date(log[log.length-1].date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+  const totalSets = log.reduce((sum, entry) => sum + (entry.exercises || []).reduce((s, ex) => s + (ex.sets || []).filter(s=>!s.isWarmup).length, 0), 0);
+  const storageBytes = (localStorage.getItem('liftlog_v1') || '').length + (localStorage.getItem('liftlog_bw_v1') || '').length;
+  const storageKB = (storageBytes / 1024).toFixed(1);
+  el.innerHTML = `
+    <div style="margin-top:16px;background:var(--surface);border-radius:var(--radius);overflow:hidden">
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">Workout sessions</span><span class="data-stat-val">${log.length}</span></div>
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">Total sets logged</span><span class="data-stat-val">${totalSets}</span></div>
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">Bodyweight entries</span><span class="data-stat-val">${bw.length}</span></div>
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">First session</span><span class="data-stat-val">${firstDate}</span></div>
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">Last session</span><span class="data-stat-val">${lastDate}</span></div>
+      <div class="data-stat-row" style="padding:10px 14px"><span class="data-stat-label">Storage used</span><span class="data-stat-val">${storageKB} KB</span></div>
+    </div>`;
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
 loadTimerSettings();
 renderProgram();
 renderDayNames();
+renderAllRecs();
 checkDeload();
 </script>
 
@@ -1929,6 +2419,21 @@ checkDeload();
     <div class="swap-modal-list" id="swap-modal-list"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeSwap()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPERSET PICKER MODAL -->
+<div class="modal-overlay" id="ss-picker-modal" onclick="closeSupersetPickerOutside(event)">
+  <div class="plate-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-title">Group as superset with...</div>
+      <div class="modal-sub" id="ss-picker-sub"></div>
+    </div>
+    <div class="swap-modal-list" id="ss-picker-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeSupersetPicker()">Cancel</button>
     </div>
   </div>
 </div>
