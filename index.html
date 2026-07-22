@@ -355,6 +355,12 @@
   .import-status { font-size: 13px; padding: 10px 0; text-align: center; }
   .import-status.ok { color: var(--accent); }
   .import-status.err { color: #e04b4b; }
+
+  /* PER-SET BAND PICKER */
+  .set-band-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .set-band-wrap { cursor: pointer; padding: 2px; }
+  .set-band-dot { width: 22px; height: 22px; border-radius: 50%; border: 3px solid transparent; transition: border 0.15s; }
+  .set-band-dot.selected { border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -855,10 +861,12 @@ function renderExRow(dayKey, ex) {
   const libMatch = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
   const aceUrl = libMatch && libMatch.ace ? ACE_BASE + libMatch.ace + '/' : null;
   const ssTag = ex.supersetGroup ? '<span class="ss-badge">SS</span>' : '';
+  const inProgress = getCompletedSetsCount(dayKey, ex.id);
+  const progressTag = inProgress > 0 ? `<span class="ss-badge" style="background:rgba(200,241,53,0.15);color:var(--accent);border-color:rgba(200,241,53,0.3)">${inProgress}/${ex.sets} sets</span>` : '';
   return `<div class="ex-row" onclick="openModal('${dayKey}','${ex.id}')">
     <div class="muscle-icon">${muscleSVG(ex.muscle)}</div>
     <div class="ex-info">
-      <div class="ex-name">${ex.name}${ex.anchor ? ' ★' : ''}${ssTag}${aceUrl ? ` <a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;vertical-align:middle">ACE ↗</a>` : ''}</div>
+      <div class="ex-name">${ex.name}${ex.anchor ? ' ★' : ''}${ssTag}${progressTag}${aceUrl ? ` <a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;vertical-align:middle">ACE ↗</a>` : ''}</div>
       <div class="ex-scheme">${ex.sets}×${ex.reps}${ex.note ? ' · ' + ex.note : ''} · ${ex.equip}${get1RM(ex.id) ? `<span class="orm-badge">~${get1RM(ex.id)} lb 1RM</span>` : ''}</div>
     </div>
     <div class="ex-last">${lastText}</div>
@@ -913,20 +921,34 @@ function openModal(dayKey, exId) {
     wtRow.style.display = 'none';
   }
 
-  warmupStates = calcWarmups(lastWeight);
-  setStates = Array.from({length: ex.sets}, (_, i) => {
-    const lastW = last && last[i] ? last[i].weight : (lastWeight ? lastWeight + 5 : '');
-    return { weight: lastW, reps: ex.reps, done: false };
-  });
+  // Restore in-progress state if exists, otherwise build fresh
+  const savedState = loadSessionState(dayKey, exId);
+  if (savedState) {
+    setStates = savedState.setStates || [];
+    warmupStates = savedState.warmupStates || calcWarmups(lastWeight);
+    showWarmups = savedState.showWarmups || false;
+    selectedBands = savedState.selectedBands || [];
+    document.getElementById('warmup-toggle').checked = showWarmups;
+  } else {
+    warmupStates = calcWarmups(lastWeight);
+    setStates = Array.from({length: ex.sets}, (_, i) => {
+      const lastW = last && last[i] ? last[i].weight : (lastWeight ? lastWeight + 5 : '');
+      return { weight: lastW, reps: ex.reps, done: false };
+    });
+  }
 
   selectedBands = [];
 
-  // Load last note for this exercise
+  // Load notes: from session state if mid-session, otherwise from last log
   const notesEl = document.getElementById('session-notes');
   if (notesEl) {
-    const lastEx = getLastExerciseLog(ex.id);
-    notesEl.value = lastEx && lastEx.notes ? lastEx.notes : '';
-    notesEl.placeholder = lastEx && lastEx.notes ? 'Last note: ' + lastEx.notes.substring(0,40) + (lastEx.notes.length > 40 ? '...' : '') : 'How did this feel? Form cues to remember...';
+    if (savedState && savedState.notes) {
+      notesEl.value = savedState.notes;
+    } else {
+      const lastEx = getLastExerciseLog(ex.id);
+      notesEl.value = '';
+      notesEl.placeholder = lastEx && lastEx.notes ? 'Last note: ' + lastEx.notes.substring(0,40) + (lastEx.notes.length > 40 ? '...' : '') : 'How did this feel? Form cues to remember...';
+    }
   }
 
   renderSets();
@@ -938,6 +960,7 @@ function openModal(dayKey, exId) {
 function toggleWarmups() {
   showWarmups = document.getElementById('warmup-toggle').checked;
   renderSets();
+  saveSessionState();
 }
 
 function syncAllInputs() {
@@ -962,6 +985,7 @@ function syncAllInputs() {
 }
 
 function renderSets() {
+  const isBand = currentEx && isBandExercise(currentEx);
   let html = '';
   if (showWarmups && warmupStates.length) {
     html += `<div class="set-section-label warmup-label">Warmup sets</div>`;
@@ -982,33 +1006,54 @@ function renderSets() {
     `).join('');
     html += `<div class="set-section-label working-label">Working sets</div>`;
   }
-  html += setStates.map((s, i) => `
+  html += setStates.map((s, i) => {
+    const bandInput = isBand ? `
+      <div class="set-band-row">
+        ${BAND_COLORS.map((b, bi) => `
+          <div class="set-band-wrap" onclick="toggleSetBand(${i},${bi})">
+            <div class="set-band-dot ${(s.bands||[]).includes(bi) ? 'selected' : ''}" style="background:${b.hex}"></div>
+          </div>`).join('')}
+        <span class="set-label" style="margin-left:4px">${(s.bands||[]).map(bi=>BAND_COLORS[bi].name).join('+') || 'pick band'}</span>
+      </div>` : `
+      <input class="set-input" type="number" inputmode="decimal" placeholder="lb" value="${s.weight}"
+        onchange="setStates[${i}].weight=this.value;saveSessionState()" style="width:64px"/>
+      <span class="set-label">lb</span>`;
+    return `
     <div class="set-row" data-set-idx="${i}">
       <div class="set-num">${i+1}</div>
       <div class="set-input-group">
-        <input class="set-input" type="number" inputmode="decimal" placeholder="lb" value="${s.weight}"
-          onchange="setStates[${i}].weight=this.value" style="width:64px"/>
-        <span class="set-label">lb</span>
+        ${bandInput}
         <input class="set-input" type="number" inputmode="numeric" value="${s.reps}"
-          onchange="setStates[${i}].reps=this.value" style="width:52px"/>
+          onchange="setStates[${i}].reps=this.value;saveSessionState()" style="width:52px"/>
         <span class="set-label">reps</span>
       </div>
       <button class="set-check ${s.done ? 'done' : ''}" onclick="toggleSet(${i})"></button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
   document.getElementById('set-list').innerHTML = html;
+}
+
+function toggleSetBand(setIdx, bandIdx) {
+  if (!setStates[setIdx].bands) setStates[setIdx].bands = [];
+  const pos = setStates[setIdx].bands.indexOf(bandIdx);
+  if (pos >= 0) setStates[setIdx].bands.splice(pos, 1);
+  else setStates[setIdx].bands.push(bandIdx);
+  renderSets();
+  saveSessionState();
 }
 
 function toggleWarmupSet(i) {
   syncAllInputs();
   warmupStates[i].done = !warmupStates[i].done;
   renderSets();
+  saveSessionState();
 }
 
 function toggleSet(i) {
   syncAllInputs();
   setStates[i].done = !setStates[i].done;
   renderSets();
+  saveSessionState();
 }
 
 function closeModal() {
@@ -1026,7 +1071,12 @@ function saveLog() {
 
   const allSets = [
     ...(showWarmups ? warmupStates.map(s => ({ weight: s.weight, reps: s.reps, done: s.done, isWarmup: true })) : []),
-    ...setStates.map(s => ({ weight: s.weight, reps: s.reps, done: s.done }))
+    ...setStates.map(s => ({
+      weight: s.weight,
+      reps: s.reps,
+      done: s.done,
+      bands: s.bands && s.bands.length ? s.bands.map(bi => BAND_COLORS[bi].name) : null
+    }))
   ];
   const notesEl = document.getElementById('session-notes');
   const notes = notesEl ? notesEl.value.trim() : '';
@@ -1059,6 +1109,7 @@ function saveLog() {
     saveToLog(entry);
   }
 
+  clearSessionState(currentDay, currentEx.id);
   closeModal();
   renderProgram();
   renderAllRecs();
@@ -1136,43 +1187,90 @@ function renderProgress() {
   const log = getLog();
   const el = document.getElementById('progress-content');
 
-  // Collect max weight per exercise per session
+  // Collect max weight or band per exercise per session (last 4 weeks)
+  const fourWeeksAgo = Date.now() - (28 * 24 * 60 * 60 * 1000);
   const exData = {};
   log.forEach(entry => {
+    if (new Date(entry.date) < fourWeeksAgo) return;
     (entry.exercises || []).forEach(ex => {
-      if (!exData[ex.id]) exData[ex.id] = { name: ex.name, sessions: [] };
-      const maxW = Math.max(...ex.sets.map(s => parseFloat(s.weight) || 0));
-      if (maxW > 0) {
-        exData[ex.id].sessions.push({ date: entry.date, weight: maxW });
+      if (!exData[ex.id]) exData[ex.id] = { name: ex.name, sessions: [], isBand: false };
+      const workingSets = (ex.sets || []).filter(s => !s.isWarmup);
+      // Check if band exercise
+      const hasBands = workingSets.some(s => s.bands && s.bands.length);
+      const maxW = Math.max(...workingSets.map(s => parseFloat(s.weight) || 0));
+      if (hasBands) {
+        exData[ex.id].isBand = true;
+        // Use highest band in order as "value"
+        const allBands = workingSets.flatMap(s => s.bands || []);
+        const topBand = allBands.reduce((top, b) => {
+          return BAND_ORDER.indexOf(b) > BAND_ORDER.indexOf(top) ? b : top;
+        }, allBands[0] || 'Gray');
+        exData[ex.id].sessions.push({ date: entry.date, band: topBand, value: BAND_ORDER.indexOf(topBand) });
+      } else if (maxW > 0) {
+        exData[ex.id].sessions.push({ date: entry.date, weight: maxW, value: maxW });
       }
     });
   });
 
   if (!Object.keys(exData).length) {
-    el.innerHTML = '<div class="history-empty">Log some sessions first to see progress.</div>';
+    el.innerHTML = '<div class="history-empty">Log some sessions in the last 4 weeks to see progress.</div>';
     return;
   }
 
-  let html = '';
+  let html = '<div style="padding:0 0 8px"><div class="section-label-inline" style="padding:4px 0 8px;font-size:11px;color:var(--text3)">Last 4 weeks</div></div>';
+
   Object.values(exData).forEach(ex => {
-    if (!ex.sessions.length) return;
-    const maxW = Math.max(...ex.sessions.map(s => s.weight));
-    const last8 = ex.sessions.slice(-8);
-    const bars = last8.map(s => {
-      const pct = maxW > 0 ? Math.round((s.weight / maxW) * 100) : 0;
-      const label = new Date(s.date).toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
-      return `<div class="prog-bar-wrap">
-        <div class="prog-bar-val">${s.weight}</div>
-        <div class="prog-bar" style="height:${Math.max(pct * 0.7, 4)}px"></div>
-        <div class="prog-bar-label">${label}</div>
-      </div>`;
+    if (ex.sessions.length < 2) return; // need at least 2 points for a line
+    const sessions = ex.sessions.slice(-8);
+    const values = sessions.map(s => s.value);
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+    const range = maxV - minV || 1;
+    const W = 300, H = 80, PAD = 24;
+    const pts = sessions.map((s, i) => {
+      const x = PAD + (i / Math.max(sessions.length - 1, 1)) * (W - PAD * 2);
+      const y = H - PAD - ((s.value - minV) / range) * (H - PAD * 2);
+      return { x, y, s };
+    });
+    // Build SVG path
+    const pathD = pts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`)).join(' ');
+    const areaD = `${pathD} L${pts[pts.length-1].x},${H-4} L${pts[0].x},${H-4} Z`;
+    const dots = pts.map(p => {
+      const label = ex.isBand ? p.s.band : p.s.weight + 'lb';
+      return `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+        <title>${new Date(p.s.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}: ${label}</title>`;
     }).join('');
+    const xLabels = pts.map(p =>
+      `<text x="${p.x}" y="${H}" font-size="9" fill="#555" text-anchor="middle">${new Date(p.s.date).toLocaleDateString('en-US',{month:'numeric',day:'numeric'})}</text>`
+    ).join('');
+    const firstLabel = ex.isBand ? pts[0].s.band : pts[0].s.weight + 'lb';
+    const lastLabel = ex.isBand ? pts[pts.length-1].s.band : pts[pts.length-1].s.weight + 'lb';
+    const trend = values[values.length-1] > values[0] ? '↑' : values[values.length-1] < values[0] ? '↓' : '→';
+    const trendColor = trend === '↑' ? 'var(--accent)' : trend === '↓' ? '#e04b4b' : 'var(--text2)';
+
     html += `<div class="prog-section">
-      <div class="prog-ex-label">${ex.name}</div>
-      <div class="prog-chart"><div class="prog-bars">${bars}</div></div>
+      <div class="prog-ex-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>${ex.name}</span>
+        <span style="font-size:13px;color:${trendColor};font-weight:700">${trend} ${lastLabel}</span>
+      </div>
+      <div class="prog-chart" style="padding:8px 4px 4px">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
+          <defs>
+            <linearGradient id="grad-${ex.sessions[0].date.replace(/\W/g,'')}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#c8f135" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#c8f135" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="${areaD}" fill="url(#grad-${ex.sessions[0].date.replace(/\W/g,'')})" />
+          <path d="${pathD}" fill="none" stroke="#c8f135" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          ${dots}
+          ${xLabels}
+        </svg>
+      </div>
     </div>`;
   });
-  el.innerHTML = html || '<div class="history-empty">Add weights when logging to see progress charts.</div>';
+
+  el.innerHTML = html || '<div class="history-empty">Need at least 2 sessions per exercise to draw a line. Keep logging!</div>';
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
@@ -1742,11 +1840,10 @@ function addExercise(dayKey) {
 }
 
 function saveProgram() {
-  // Persist custom program changes to localStorage
   try {
     const saveable = {};
     Object.entries(PROGRAM).forEach(([k, day]) => {
-      saveable[k] = { exercises: day.exercises.map(ex => ({...ex})) };
+      saveable[k] = { name: day.name, exercises: day.exercises.map(ex => ({...ex})) };
     });
     localStorage.setItem('liftlog_program_v1', JSON.stringify(saveable));
   } catch(e) {}
@@ -1758,8 +1855,9 @@ function loadSavedProgram() {
     if (!saved) return;
     const parsed = JSON.parse(saved);
     Object.entries(parsed).forEach(([k, day]) => {
-      if (PROGRAM[k] && day.exercises) {
-        PROGRAM[k].exercises = day.exercises;
+      if (PROGRAM[k]) {
+        if (day.exercises) PROGRAM[k].exercises = day.exercises;
+        if (day.name) PROGRAM[k].name = day.name;
       }
     });
   } catch(e) {}
@@ -1904,6 +2002,66 @@ function closeSupersetPicker() {
 function closeSupersetPickerOutside(e) {
   if (e.target === document.getElementById('ss-picker-modal')) closeSupersetPicker();
 }
+// ── IN-PROGRESS SESSION STATE ─────────────────────────────────────────────────
+const SESSION_KEY = 'liftlog_session_v1';
+
+function saveSessionState() {
+  if (!currentEx) return;
+  try {
+    const state = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    const key = currentDay + '__' + currentEx.id;
+    // Sync inputs before saving
+    const rows = document.querySelectorAll('.set-row');
+    rows.forEach((row, idx) => {
+      const inputs = row.querySelectorAll('.set-input');
+      if (!inputs.length) return;
+      if (row.classList.contains('warmup-row')) {
+        const wi = parseInt(row.dataset.warmupIdx);
+        if (!isNaN(wi) && warmupStates[wi]) {
+          warmupStates[wi].weight = inputs[0].value;
+          warmupStates[wi].reps = inputs[1].value;
+        }
+      } else {
+        const si = parseInt(row.dataset.setIdx);
+        if (!isNaN(si) && setStates[si]) {
+          setStates[si].weight = inputs[0].value;
+          setStates[si].reps = inputs[1].value;
+        }
+      }
+    });
+    state[key] = {
+      setStates: setStates,
+      warmupStates: warmupStates,
+      showWarmups: showWarmups,
+      selectedBands: selectedBands,
+      notes: document.getElementById('session-notes') ? document.getElementById('session-notes').value : ''
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadSessionState(dayKey, exId) {
+  try {
+    const state = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    const key = dayKey + '__' + exId;
+    return state[key] || null;
+  } catch(e) { return null; }
+}
+
+function clearSessionState(dayKey, exId) {
+  try {
+    const state = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    delete state[dayKey + '__' + exId];
+    localStorage.setItem(SESSION_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function getCompletedSetsCount(dayKey, exId) {
+  const saved = loadSessionState(dayKey, exId);
+  if (!saved) return 0;
+  return (saved.setStates || []).filter(s => s.done).length;
+}
+
 // ── BAND COLORS ───────────────────────────────────────────────────────────────
 const BAND_COLORS = [
   { name: 'Yellow',  hex: '#f5d800', resistance: '5–15 lb' },
