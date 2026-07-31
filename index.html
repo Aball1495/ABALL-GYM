@@ -72,7 +72,7 @@
   .ex-arrow { color: var(--text3); font-size: 16px; margin-left: 4px; }
 
   /* LOG MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: flex-end; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 600; align-items: flex-end; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 20px); }
   .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
@@ -161,7 +161,7 @@
   .next-target-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
   /* REST TIMER */
-  .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 300; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 20px calc(env(safe-area-inset-bottom,0px) + 10px); display: none; align-items: center; gap: 14px; }
+  .timer-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 650; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 20px calc(env(safe-area-inset-bottom,0px) + 10px); display: none; align-items: center; gap: 14px; }
   .timer-bar.active { display: flex; }
   .timer-circle { width: 48px; height: 48px; flex-shrink: 0; }
   .timer-info { flex: 1; }
@@ -418,7 +418,7 @@
   .start-workout-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent); color: #000; border: none; border-radius: var(--radius); padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; width: calc(100% - 32px); margin: 0 16px 12px; }
 
   /* FINISH CONFIRM */
-  .finish-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 600; align-items: flex-end; }
+  .finish-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 700; align-items: flex-end; }
   .finish-overlay.open { display: flex; }
   .finish-sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 20px); }
   .finish-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
@@ -426,6 +426,15 @@
   .finish-stats { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; }
   .finish-stat { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
   .finish-stat-val { font-weight: 600; color: var(--accent); }
+
+  /* SESSION HISTORY BOX */
+  .session-history-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 8px; }
+  .session-last-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .session-last-label { color: var(--text3); }
+  .session-last-val { color: var(--text2); font-weight: 500; }
+  .session-rec-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding-top: 4px; border-top: 0.5px solid var(--border); }
+  .session-rec-label { color: var(--text2); font-weight: 500; }
+  .session-rec-val { font-weight: 600; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -897,6 +906,14 @@ function getLastExerciseLog(exId) {
   for (let i = log.length - 1; i >= 0; i--) {
     const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
     if (ex) return ex;
+  }
+  return null;
+}
+function getLastSessionDate(exId) {
+  const log = getLog();
+  for (let i = log.length - 1; i >= 0; i--) {
+    const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
+    if (ex) return log[i].date;
   }
   return null;
 }
@@ -1408,24 +1425,39 @@ function getAudioCtx() {
 }
 
 function playChime() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  // Three ascending tones
-  const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    const t = ctx.currentTime + i * 0.18;
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.4, t + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-    osc.start(t);
-    osc.stop(t + 0.4);
-  });
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    // Resume if suspended (iOS requirement)
+    const doPlay = () => {
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.18;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.5, t + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        osc.start(t);
+        osc.stop(t + 0.5);
+      });
+    };
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(doPlay).catch(() => {});
+    } else {
+      doPlay();
+    }
+  } catch(e) {}
+  // Visual flash on timer bar as backup
+  const bar = document.getElementById('timer-bar');
+  if (bar) {
+    bar.style.background = 'rgba(200,241,53,0.2)';
+    setTimeout(() => { bar.style.background = ''; }, 800);
+  }
 }
 
 // Unlock audio context on first user interaction
@@ -2663,6 +2695,42 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
 
   let setsHtml = sets.map((s, i) => renderSessionSetRow(ex, i, s, isBand)).join('');
 
+  // Build last session summary
+  const lastSets = getLastSets(ex.id);
+  const lastEx = getLastExerciseLog(ex.id);
+  let lastSummaryHtml = '';
+  if (lastSets && lastSets.length) {
+    const lastDate = lastEx ? new Date(getLastSessionDate(ex.id)).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    if (isBand) {
+      const lastBands = lastEx && lastEx.bands ? lastEx.bands.join('+') :
+        lastSets.flatMap(s => s.bands||[]).filter((v,i,a)=>a.indexOf(v)===i).join('+') || '—';
+      lastSummaryHtml = `<div class="session-last-row">
+        <span class="session-last-label">Last (${lastDate})</span>
+        <span class="session-last-val">${lastBands} band · ${lastSets[0].reps} reps</span>
+      </div>
+      <div class="session-rec-row">
+        <span class="session-rec-label">↑ Target</span>
+        <span class="session-rec-val">${getExRec(ex, getLastSession(activeSession.dayKey)).text}</span>
+      </div>`;
+    } else {
+      const maxW = Math.max(...lastSets.map(s => parseFloat(s.weight)||0));
+      const repsArr = lastSets.map(s => s.reps);
+      const allHit = lastSets.every(s => parseInt(s.reps) >= ex.reps);
+      const targetW = allHit ? maxW + 5 : maxW;
+      const action = allHit ? '↑ Go up' : '→ Stay';
+      lastSummaryHtml = `<div class="session-last-row">
+        <span class="session-last-label">Last (${lastDate})</span>
+        <span class="session-last-val">${maxW} lb · ${repsArr.join('/')} reps</span>
+      </div>
+      <div class="session-rec-row">
+        <span class="session-rec-label">${action} Target</span>
+        <span class="session-rec-val" style="color:${allHit ? 'var(--accent)' : 'var(--text2)'}">${targetW} lb × ${ex.reps} reps</span>
+      </div>`;
+    }
+  } else {
+    lastSummaryHtml = `<div class="session-last-row"><span class="session-last-label">First session</span><span class="session-last-val">Start light, focus on form</span></div>`;
+  }
+
   return `<div class="session-ex-block" id="session-ex-${ex.id}" style="${inSuperset ? 'border-radius:0;box-shadow:none' : ''}">
     <div class="session-ex-header">
       <div class="session-ex-name">
@@ -2672,6 +2740,7 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
         ${aceUrl ? `<a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px">ACE ↗</a>` : ''}
       </div>
       <div class="session-ex-scheme">${ex.sets}×${ex.reps}${ex.note ? ' · ' + ex.note : ''} · ${ex.equip}</div>
+      <div class="session-history-box">${lastSummaryHtml}</div>
     </div>
     <div class="session-sets-area" id="session-sets-${ex.id}">
       ${setsHtml}
