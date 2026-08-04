@@ -2773,7 +2773,7 @@ function renderSessionSetRow(ex, i, s, isBand) {
           onchange="activeSession.sets['${exId}'][${i}].reps=this.value" style="width:60px"/>
         <span class="session-set-label">reps</span>
       </div>
-      <button class="session-set-check ${s.done ? 'done' : ''}" onclick="toggleSessionSet('${exId}',${i},${JSON.stringify(ex).replace(/'/g,'&#39;')})">
+      <button class="session-set-check ${s.done ? 'done' : ''}" onclick="toggleSessionSet('${exId}',${i},null)">
         ${s.done ? '✓' : ''}
       </button>
       <button class="session-set-del" onclick="deleteSessionSet('${exId}',${i})">×</button>
