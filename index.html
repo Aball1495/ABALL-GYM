@@ -435,6 +435,19 @@
   .session-rec-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding-top: 4px; border-top: 0.5px solid var(--border); }
   .session-rec-label { color: var(--text2); font-weight: 500; }
   .session-rec-val { font-weight: 600; color: var(--accent); }
+
+  /* SESSION WARMUPS */
+  .session-warmup-toggle { display: flex; align-items: center; gap: 8px; padding: 8px 16px; cursor: pointer; border-bottom: 0.5px solid var(--border); background: rgba(245,166,35,0.04); flex-wrap: wrap; }
+  .session-warmup-toggle:active { background: rgba(245,166,35,0.1); }
+  .session-warmup-chip { background: rgba(245,166,35,0.15); color: #f5a623; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+
+  /* EQUIPMENT SWITCHER */
+  .session-equip-switcher { display: flex; align-items: center; gap: 6px; padding: 6px 16px; flex-wrap: wrap; }
+  .session-equip-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer; }
+  .session-equip-btn:active { background: var(--accent-dim); color: var(--accent); }
+  /* SET ADJUSTER */
+  .session-set-adjuster { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+  .session-adj-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 16px; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
 </style>
 </head>
 <body>
@@ -2365,10 +2378,12 @@ function getExRec(ex, lastSession) {
 
   // Band exercise
   if (isBandExercise(ex)) {
-    if (!lastEx || !lastEx.bands || !lastEx.bands.length) {
+    const lastSetsForRec = lastSession && (lastSession.exercises || []).find(e => e.id === ex.id);
+    const allBandNamesRec = lastSetsForRec ? (lastSetsForRec.sets||[]).flatMap(s => s.bands||[]).filter((v,i,a)=>a.indexOf(v)===i) : [];
+    if (!lastEx || !allBandNamesRec.length) {
       return { type: 'first', text: 'First session — start light', badge: 'first' };
     }
-    const lastBands = lastEx.bands;
+    const lastBands = allBandNamesRec;
     // Suggest next band up if all reps completed
     const allDone = (lastEx.sets || []).filter(s=>!s.isWarmup).every(s => s.done !== false);
     const topBand = lastBands.reduce((top, b) => {
@@ -2625,7 +2640,8 @@ function startSession(dayKey) {
     dayKey,
     startTime: Date.now(),
     sets: {},
-    notes: {}
+    notes: {},
+    showWarmups: {}
   };
   // Pre-populate sets from last session as suggestions
   const day = PROGRAM[dayKey];
@@ -2693,6 +2709,28 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
   const libMatch = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
   const aceUrl = libMatch && libMatch.ace ? ACE_BASE + libMatch.ace + '/' : null;
 
+  // Warmup sets for anchor/compound exercises
+  const lastWeight = getLastWorkingWeight(ex.id);
+  const warmups = (ex.anchor && lastWeight) ? calcWarmups(lastWeight) : [];
+  const sessionWarmupKey = ex.id + '_warmups';
+  const showSessionWarmups = activeSession.showWarmups && activeSession.showWarmups[ex.id];
+  let warmupsHtml = '';
+  if (warmups.length && !isBand) {
+    warmupsHtml = `<div class="session-warmup-toggle" onclick="toggleSessionWarmups('${ex.id}')">
+      <span style="font-size:12px;color:var(--text2)">${showSessionWarmups ? '▾' : '▸'} Warmup sets</span>
+      ${showSessionWarmups ? warmups.map((w,i) => `<span class="session-warmup-chip">${w.weight}lb × ${w.reps}</span>`).join('') : `<span style="font-size:11px;color:var(--text3)">${warmups[0].weight}lb / ${warmups[1].weight}lb</span>`}
+    </div>
+    ${showSessionWarmups ? warmups.map((w,wi) => `
+      <div class="session-set-row" style="opacity:0.6;background:rgba(245,166,35,0.04)">
+        <div class="session-set-num" style="color:#f5a623">W${wi+1}</div>
+        <div class="session-set-inputs">
+          <span style="font-size:14px;font-weight:600;color:var(--text)">${w.weight} lb</span>
+          <span class="session-set-label">×</span>
+          <span style="font-size:14px;font-weight:600;color:var(--text)">${w.reps} reps</span>
+          <span class="session-set-label">(${w.pct})</span>
+        </div>
+      </div>`).join('') : ''}`;
+  }
   let setsHtml = sets.map((s, i) => renderSessionSetRow(ex, i, s, isBand)).join('');
 
   // Build last session summary
@@ -2702,8 +2740,9 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
   if (lastSets && lastSets.length) {
     const lastDate = lastEx ? new Date(getLastSessionDate(ex.id)).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
     if (isBand) {
-      const lastBands = lastEx && lastEx.bands ? lastEx.bands.join('+') :
-        lastSets.flatMap(s => s.bands||[]).filter((v,i,a)=>a.indexOf(v)===i).join('+') || '—';
+      // Bands are stored per-set as names, collect unique ones across all sets
+      const allBandNames = lastSets.flatMap(s => s.bands||[]).filter((v,i,a)=>a.indexOf(v)===i);
+      const lastBands = allBandNames.length ? allBandNames.join('+') : '—';
       lastSummaryHtml = `<div class="session-last-row">
         <span class="session-last-label">Last (${lastDate})</span>
         <span class="session-last-val">${lastBands} band · ${lastSets[0].reps} reps</span>
@@ -2731,19 +2770,30 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
     lastSummaryHtml = `<div class="session-last-row"><span class="session-last-label">First session</span><span class="session-last-val">Start light, focus on form</span></div>`;
   }
 
-  return `<div class="session-ex-block" id="session-ex-${ex.id}" style="${inSuperset ? 'border-radius:0;box-shadow:none' : ''}">
+  return `<div class="session-ex-block" id="session-ex-${ex.id}" style="${inSuperset ? 'border-radius:0;box-shadow:none' : ''}" onclick="handleSessionExTap('${ex.id}')">
     <div class="session-ex-header">
       <div class="session-ex-name">
         <div class="muscle-icon" style="width:28px;height:28px;flex-shrink:0">${muscleSVG(ex.muscle)}</div>
         <span>${ex.name}${ex.anchor ? ' ★' : ''}</span>
         ${allDone ? '<span class="session-ex-done-badge">✓ Done</span>' : completedCount > 0 ? `<span class="session-ex-done-badge">${completedCount}/${sets.length}</span>` : ''}
+        <div class="session-set-adjuster">
+          <button onclick="adjustSessionSets('${ex.id}',-1)" class="session-adj-btn">−</button>
+          <span style="font-size:12px;color:var(--text2);min-width:20px;text-align:center">${sets.length}</span>
+          <button onclick="adjustSessionSets('${ex.id}',1)" class="session-adj-btn">+</button>
+        </div>
         ${aceUrl ? `<a class="ace-link" href="${aceUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px">ACE ↗</a>` : ''}
       </div>
       <div class="session-ex-scheme">${ex.sets}×${ex.reps}${ex.note ? ' · ' + ex.note : ''} · ${ex.equip}</div>
+      ${isBand ? `<div class="session-equip-switcher">
+        <span style="font-size:11px;color:var(--text3)">Switch to:</span>
+        <button class="session-equip-btn" onclick="switchSessionEquip('${ex.id}','cable')">Cable</button>
+        <button class="session-equip-btn" onclick="switchSessionEquip('${ex.id}','dumbbell')">Dumbbell</button>
+        <button class="session-equip-btn" onclick="switchSessionEquip('${ex.id}','band')">Band</button>
+      </div>` : ''}
       <div class="session-history-box">${lastSummaryHtml}</div>
     </div>
     <div class="session-sets-area" id="session-sets-${ex.id}">
-      ${setsHtml}
+      ${warmupsHtml}${setsHtml}
     </div>
     <div class="session-add-set-btn" onclick="addSessionSet('${ex.id}')">+ Add set</div>
     <div class="session-notes-area">
@@ -2831,9 +2881,22 @@ function toggleSessionSet(exId, setIdx, exObj) {
     if (s.done) {
       const dur = getTimerDuration(exId);
       if (dur > 0) {
-        const label = ex.supersetGroup ? 'Quick switch →' : 'Rest — next set in';
-        document.getElementById('timer-label').textContent = label;
-        startTimer(ex.supersetGroup ? 15 : dur);
+        if (ex.supersetGroup) {
+          // Check if this is the last exercise in the superset group
+          const dayExes = PROGRAM[activeSession.dayKey] ? PROGRAM[activeSession.dayKey].exercises : [];
+          const groupExes = dayExes.filter(e => e.supersetGroup === ex.supersetGroup);
+          const isLastInGroup = groupExes.length > 0 && groupExes[groupExes.length-1].id === ex.id;
+          if (isLastInGroup) {
+            document.getElementById('timer-label').textContent = 'Superset rest';
+            startTimer(getSupersetTimerDuration(ex.supersetGroup, activeSession.dayKey));
+          } else {
+            document.getElementById('timer-label').textContent = 'Quick switch →';
+            startTimer(15);
+          }
+        } else {
+          document.getElementById('timer-label').textContent = 'Rest — next set in';
+          startTimer(dur);
+        }
       }
     }
   }
@@ -2907,6 +2970,118 @@ function closeFinish() {
 
 function closeFinishOutside(e) {
   if (e.target === document.getElementById('finish-overlay')) closeFinish();
+}
+
+
+function switchSessionEquip(exId, type) {
+  if (!activeSession) return;
+  const day = PROGRAM[activeSession.dayKey];
+  const ex = day.exercises.find(e => e.id === exId);
+  if (!ex) return;
+  if (type === 'cable') {
+    ex.equip = 'Cable machine';
+    // Remove band from name if needed, keep muscle
+    activeSession.sets[exId] = activeSession.sets[exId].map(s => ({ ...s, bands: [], weight: '', isCable: true }));
+  } else if (type === 'dumbbell') {
+    ex.equip = 'Dumbbells';
+    activeSession.sets[exId] = activeSession.sets[exId].map(s => ({ ...s, bands: [], weight: '', isDumbbell: true }));
+  } else {
+    ex.equip = 'Long band';
+    activeSession.sets[exId] = activeSession.sets[exId].map(s => ({ ...s, bands: [] }));
+  }
+  renderSession();
+}
+
+function adjustSessionSets(exId, delta) {
+  if (!activeSession) return;
+  const day = PROGRAM[activeSession.dayKey];
+  const ex = day.exercises.find(e => e.id === exId);
+  const current = activeSession.sets[exId] || [];
+  if (delta < 0 && current.length <= 1) return;
+  if (delta > 0) {
+    const last = current[current.length - 1] || {};
+    current.push({ weight: last.weight || '', reps: ex ? ex.reps : 8, done: false, bands: [] });
+  } else {
+    current.pop();
+  }
+  activeSession.sets[exId] = current;
+  const setsEl = document.getElementById('session-sets-' + exId);
+  if (setsEl && ex) {
+    // Re-render just the sets area without full renderSession
+    const isBand = isBandExercise(ex);
+    const lastWeight = getLastWorkingWeight(ex.id);
+    const warmups = (ex.anchor && lastWeight && !isBand) ? calcWarmups(lastWeight) : [];
+    const showWarmup = activeSession.showWarmups && activeSession.showWarmups[ex.id];
+    let warmupsHtml = '';
+    if (warmups.length) {
+      warmupsHtml = `<div class="session-warmup-toggle" onclick="toggleSessionWarmups('${ex.id}')">
+        <span style="font-size:12px;color:var(--text2)">${showWarmup ? '▾' : '▸'} Warmup sets</span>
+        ${warmups.map(w=>`<span class="session-warmup-chip">${w.weight}lb × ${w.reps}</span>`).join('')}
+      </div>
+      ${showWarmup ? warmups.map((w,wi)=>`<div class="session-set-row" style="opacity:0.6">
+        <div class="session-set-num" style="color:#f5a623">W${wi+1}</div>
+        <div class="session-set-inputs"><span style="font-size:14px;font-weight:600">${w.weight} lb</span><span class="session-set-label">× ${w.reps} reps (${w.pct})</span></div>
+      </div>`).join('') : ''}`;
+    }
+    setsEl.innerHTML = warmupsHtml + current.map((s, i) => renderSessionSetRow(ex, i, s, isBand)).join('');
+    // Update set count display
+    const adjEl = document.querySelector(`#session-ex-${exId} .session-set-adjuster span`);
+    if (adjEl) adjEl.textContent = current.length;
+  }
+}
+
+
+let sessionSSMode = false;
+let sessionSSFirst = null;
+
+function toggleSessionSSMode() {
+  sessionSSMode = !sessionSSMode;
+  sessionSSFirst = null;
+  const btn = document.getElementById('ss-mode-btn');
+  if (btn) {
+    btn.style.background = sessionSSMode ? 'rgba(91,156,246,0.2)' : '';
+    btn.style.color = sessionSSMode ? '#5b9cf6' : '';
+    btn.textContent = sessionSSMode ? '✕ Cancel' : '⇄ Superset';
+  }
+  // Add tap-to-pair overlay on exercise blocks
+  renderSession();
+}
+
+function handleSessionExTap(exId) {
+  if (!sessionSSMode) return;
+  const day = PROGRAM[activeSession.dayKey];
+  const ex = day.exercises.find(e => e.id === exId);
+  if (!ex) return;
+  if (!sessionSSFirst) {
+    sessionSSFirst = exId;
+    const block = document.getElementById('session-ex-' + exId);
+    if (block) block.style.outline = '2px solid #5b9cf6';
+    return;
+  }
+  if (sessionSSFirst === exId) {
+    sessionSSFirst = null;
+    const block = document.getElementById('session-ex-' + exId);
+    if (block) block.style.outline = '';
+    return;
+  }
+  // Pair them
+  const ex1 = day.exercises.find(e => e.id === sessionSSFirst);
+  const ex2 = ex;
+  const groupId = ex1.supersetGroup || ex2.supersetGroup || (activeSession.dayKey + '-ss-' + Date.now());
+  if (ex1) ex1.supersetGroup = groupId;
+  ex2.supersetGroup = groupId;
+  saveProgram();
+  sessionSSMode = false;
+  sessionSSFirst = null;
+  const btn = document.getElementById('ss-mode-btn');
+  if (btn) { btn.style.background = ''; btn.style.color = ''; btn.textContent = '⇄ Superset'; }
+  renderSession();
+}
+
+function toggleSessionWarmups(exId) {
+  if (!activeSession) return;
+  activeSession.showWarmups[exId] = !activeSession.showWarmups[exId];
+  renderSession();
 }
 
 function finishSession() {
@@ -3107,7 +3282,8 @@ checkDeload();
     <div class="session-tools-row">
       <button class="session-tool-btn" onclick="openPlate()">⚖ Plates</button>
       <button class="session-tool-btn" onclick="openTimerSettings()">⏱ Timer</button>
-      <button class="session-tool-btn" onclick="addSessionExercise()">+ Exercise</button>
+      <button class="session-tool-btn" id="ss-mode-btn" onclick="toggleSessionSSMode()">⇄ Superset</button>
+      <button class="session-tool-btn" onclick="addSessionExercise()">+ Add</button>
     </div>
   </div>
   <div class="session-scroll" id="session-scroll"></div>
