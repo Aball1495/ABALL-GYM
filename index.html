@@ -851,13 +851,14 @@ const PROGRAM = {
     defaultName: 'Friday — Upper A',
     color: 'push',
     exercises: [
-      { id: 'bench',    name: 'Barbell bench press',      sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'chest',     anchor: true },
-      { id: 'lm-press', name: 'Landmine press',            sets: 3, reps: 8,  equip: 'Landmine · barbell',       muscle: 'shoulders' },
-      { id: 'row-over', name: 'Barbell bent-over row',     sets: 3, reps: 8,  equip: 'Barbell',                  muscle: 'back' },
-      { id: 'inc-db',   name: 'DB incline press',          sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest' },
-      { id: 'lat-raise',name: 'Cable lateral raise',       sets: 3, reps: 15, equip: 'Cable machine',            muscle: 'shoulders' },
-      { id: 'pushdown', name: 'Cable tricep pushdown',     sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'triceps' },
-      { id: 'pull-apart',name:'Band pull-apart',           sets: 3, reps: 20, equip: 'Short band',               muscle: 'rear-delts' },
+      { id: 'bench',     name: 'Barbell bench press',      sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'chest',     anchor: true },
+      { id: 'lm-press',  name: 'Landmine press',           sets: 3, reps: 8,  equip: 'Landmine · barbell',       muscle: 'shoulders' },
+      { id: 'row-over',  name: 'Barbell bent-over row',    sets: 3, reps: 8,  equip: 'Barbell',                  muscle: 'back' },
+      { id: 'inc-db',    name: 'DB incline press',         sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest' },
+      { id: 'lat-raise', name: 'Cable lateral raise',      sets: 3, reps: 15, equip: 'Cable machine',            muscle: 'shoulders' },
+      { id: 'pushdown',  name: 'Cable tricep pushdown',    sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'triceps' },
+      { id: 'cable-curl',name: 'Cable curl',               sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'biceps' },
+      { id: 'pull-apart',name: 'Band pull-apart',          sets: 3, reps: 20, equip: 'Short band',               muscle: 'rear-delts' },
     ]
   },
   sat: {
@@ -879,14 +880,14 @@ const PROGRAM = {
     defaultName: 'Sunday — Upper B',
     color: 'pull',
     exercises: [
-      { id: 'pullup',   name: 'Band assisted pull-up',     sets: 4, reps: 8,  equip: 'Pull-up bar · long band',   muscle: 'lats',    anchor: true },
-      { id: 'pendlay',  name: 'Curl bar Pendlay row',      sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'back' },
-      { id: 'ring-row', name: 'Ring row',                  sets: 3, reps: 8,  equip: 'Rings',                    muscle: 'back' },
-      { id: 'floor-press',name:'DB floor press',           sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest' },
-      { id: 'preacher', name: 'Curl bar preacher curl',    sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'biceps' },
-      { id: 'cable-tri-oh', name: 'Cable overhead tricep extension', sets: 3, reps: 8, equip: 'Cable machine',   muscle: 'triceps' },
-      { id: 'face-pull',name: 'Cable face pull',           sets: 3, reps: 20, equip: 'Cable machine · rope',     muscle: 'rear-delts' },
-      { id: 'band-tri', name: 'Band overhead tricep ext.', sets: 3, reps: 15, equip: 'Long band',                muscle: 'triceps' },
+      { id: 'pullup',       name: 'Band assisted pull-up',           sets: 4, reps: 8,  equip: 'Pull-up bar · long band', muscle: 'lats',      anchor: true },
+      { id: 'lm-meadows',   name: 'Landmine meadows row',             sets: 3, reps: 8,  equip: 'Landmine · barbell',      muscle: 'back',      note: 'Each side' },
+      { id: 'floor-press',  name: 'DB floor press',                   sets: 3, reps: 8,  equip: 'Dumbbells',               muscle: 'chest' },
+      { id: 'ring-row',     name: 'Ring row',                         sets: 3, reps: 8,  equip: 'Rings',                   muscle: 'back' },
+      { id: 'cable-tri-oh', name: 'Cable overhead tricep extension',  sets: 3, reps: 8,  equip: 'Cable machine',           muscle: 'triceps' },
+      { id: 'preacher',     name: 'Curl bar preacher curl',           sets: 3, reps: 8,  equip: 'Curl bar',                muscle: 'biceps' },
+      { id: 'rear-delt-fly',name: 'DB rear delt fly',                 sets: 3, reps: 15, equip: 'Dumbbells',               muscle: 'rear-delts' },
+      { id: 'face-pull',    name: 'Cable face pull',                  sets: 3, reps: 20, equip: 'Cable machine · rope',    muscle: 'rear-delts' },
     ]
   }
 };
@@ -1670,8 +1671,8 @@ function toggleSet(i) {
 }
 
 // ── PLATE CALCULATOR ──────────────────────────────────────────────────────────
-const PLATES = [45, 35, 25, 10, 5, 2.5, 1.25];
-const PLATE_CLASS = { 45:'p45', 35:'p35', 25:'p25', 10:'p10', 5:'p5', 2.5:'p25s', 1.25:'p125' };
+const PLATES = [45, 35, 25, 10, 5, 2.5, 1.25, 1.125];
+const PLATE_CLASS = { 45:'p45', 35:'p35', 25:'p25', 10:'p10', 5:'p5', 2.5:'p25s', 1.25:'p125', 1.125:'p125' };
 let currentBar = { name: 'barbell', weight: 45, isCable: false, isDumbbell: false };
 
 function openPlate() {
@@ -1838,11 +1839,16 @@ function platesForWeight(target) {
 }
 
 function renderPlateChips(plates) {
-  // Count and group
+  // Sort heaviest first, then count and group
+  const sorted = [...plates].sort((a, b) => b - a);
   const counts = {};
-  plates.forEach(p => { counts[p] = (counts[p] || 0) + 1; });
-  return Object.entries(counts).map(([p, n]) =>
-    `<div class="plate-chip ${PLATE_CLASS[p] || 'p125'}">${n > 1 ? n + '×' : ''}${p}</div>`
+  const order = [];
+  sorted.forEach(p => {
+    if (!counts[p]) { counts[p] = 0; order.push(p); }
+    counts[p]++;
+  });
+  return order.map(p =>
+    `<div class="plate-chip ${PLATE_CLASS[p] || 'p125'}">${counts[p] > 1 ? counts[p] + '×' : ''}${p}</div>`
   ).join('');
 }
 
