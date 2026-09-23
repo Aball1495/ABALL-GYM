@@ -448,6 +448,16 @@
   /* SET ADJUSTER */
   .session-set-adjuster { display: flex; align-items: center; gap: 4px; margin-left: auto; }
   .session-adj-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 16px; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+
+  /* PROGRAM SWITCHER */
+  .program-switcher { padding: 12px 16px 4px; }
+  .program-switcher-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-bottom: 8px; }
+  .program-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .program-chip { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; transition: all 0.15s; }
+  .program-chip.active { background: var(--accent-dim); border-color: var(--accent); }
+  .program-chip-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .program-chip.active .program-chip-name { color: var(--accent); }
+  .program-chip-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -476,6 +486,7 @@
 <div class="scroll">
   <!-- PROGRAM PAGE -->
   <div class="page active" id="page-program">
+    <div class="program-switcher" id="program-switcher"></div>
     <div class="deload-banner" id="deload-banner">
       <div class="deload-title">⚡ Deload week suggested</div>
       <div class="deload-sub">You've been training consistently for 8+ weeks. Consider dropping volume and intensity by ~40% this week to recover and come back stronger.</div>
@@ -485,7 +496,7 @@
     <div class="day-card" id="card-fri">
       <div class="day-header" id="header-fri" onclick="toggleDay('card-fri')">
         <div class="day-dot dot-push"></div>
-        <div class="day-name" id="dayname-fri">Friday — Upper A</div>
+        <div class="day-name" id="dayname-fri">Upper A</div>
         <div class="day-meta" id="daymeta-fri">Push · 7 exercises</div>
         <div class="day-chevron">›</div>
       </div>
@@ -497,7 +508,7 @@
     <div class="day-card" id="card-sat">
       <div class="day-header" id="header-sat" onclick="toggleDay('card-sat')">
         <div class="day-dot dot-lower"></div>
-        <div class="day-name" id="dayname-sat">Saturday — Lower</div>
+        <div class="day-name" id="dayname-sat">Lower</div>
         <div class="day-meta" id="daymeta-sat">Legs · 7 exercises</div>
         <div class="day-chevron">›</div>
       </div>
@@ -509,7 +520,7 @@
     <div class="day-card" id="card-sun">
       <div class="day-header" id="header-sun" onclick="toggleDay('card-sun')">
         <div class="day-dot dot-pull"></div>
-        <div class="day-name" id="dayname-sun">Sunday — Upper B</div>
+        <div class="day-name" id="dayname-sun">Upper B</div>
         <div class="day-meta" id="daymeta-sun">Pull · 8 exercises</div>
         <div class="day-chevron">›</div>
       </div>
@@ -845,10 +856,15 @@ function searchLibrary(query) {
 }
 
 // ── PROGRAM DATA ──────────────────────────────────────────────────────────────
-const PROGRAM = {
+const PROGRAMS = {
+  ulu: {
+    id: 'ulu',
+    name: 'ULU',
+    description: 'Upper A · Lower · Upper B',
+    days: {
   fri: {
-    name: 'Friday — Upper A',
-    defaultName: 'Friday — Upper A',
+    name: 'Upper A',
+    defaultName: 'Upper A',
     color: 'push',
     exercises: [
       { id: 'bench',     name: 'Barbell bench press',      sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'chest',     anchor: true },
@@ -862,8 +878,8 @@ const PROGRAM = {
     ]
   },
   sat: {
-    name: 'Saturday — Lower',
-    defaultName: 'Saturday — Lower',
+    name: 'Lower',
+    defaultName: 'Lower',
     color: 'lower',
     exercises: [
       { id: 'squat',    name: 'Barbell back squat',        sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'quads',     anchor: true },
@@ -876,8 +892,8 @@ const PROGRAM = {
     ]
   },
   sun: {
-    name: 'Sunday — Upper B',
-    defaultName: 'Sunday — Upper B',
+    name: 'Upper B',
+    defaultName: 'Upper B',
     color: 'pull',
     exercises: [
       { id: 'pullup',       name: 'Band assisted pull-up',           sets: 4, reps: 8,  equip: 'Pull-up bar · long band', muscle: 'lats',      anchor: true },
@@ -890,7 +906,92 @@ const PROGRAM = {
       { id: 'face-pull',    name: 'Cable face pull',                  sets: 3, reps: 20, equip: 'Cable machine · rope',    muscle: 'rear-delts' },
     ]
   }
+}
+  },
+  fb2: {
+    id: 'fb2',
+    name: 'Full Body',
+    description: 'Full Body A · Full Body B',
+    days: {
+      wed: {
+        name: 'Full Body A',
+        defaultName: 'Full Body A',
+        color: 'push',
+        exercises: [
+          { id: 'fb-squat',    name: 'Barbell back squat',              sets: 4, reps: 8,  equip: 'Barbell · weight rack',  muscle: 'quads',     anchor: true },
+          { id: 'fb-bench',    name: 'Barbell bench press',             sets: 4, reps: 8,  equip: 'Barbell · weight rack',  muscle: 'chest' },
+          { id: 'fb-row',      name: 'Barbell bent-over row',           sets: 3, reps: 8,  equip: 'Barbell',                muscle: 'back' },
+          { id: 'fb-lmpress',  name: 'Landmine press',                  sets: 3, reps: 8,  equip: 'Landmine · barbell',     muscle: 'shoulders' },
+          { id: 'fb-latrise',  name: 'Cable lateral raise',             sets: 3, reps: 15, equip: 'Cable machine',          muscle: 'shoulders' },
+          { id: 'fb-pushdown', name: 'Cable tricep pushdown',           sets: 3, reps: 8,  equip: 'Cable machine',          muscle: 'triceps' },
+          { id: 'fb-curl',     name: 'Cable curl',                      sets: 3, reps: 8,  equip: 'Cable machine',          muscle: 'biceps' },
+          { id: 'fb-pullap',   name: 'Band pull-apart',                 sets: 3, reps: 20, equip: 'Short band',             muscle: 'rear-delts' },
+        ]
+      },
+      sun: {
+        name: 'Full Body B',
+        defaultName: 'Full Body B',
+        color: 'pull',
+        exercises: [
+          { id: 'fb-rdl',      name: 'Romanian deadlift',               sets: 4, reps: 8,  equip: 'Open deadlift bar',      muscle: 'hamstrings', anchor: true },
+          { id: 'fb-pullup',   name: 'Band assisted pull-up',           sets: 4, reps: 8,  equip: 'Pull-up bar · long band',muscle: 'lats' },
+          { id: 'fb-incline',  name: 'DB incline press',                sets: 3, reps: 8,  equip: 'Dumbbells',              muscle: 'chest' },
+          { id: 'fb-meadows',  name: 'Landmine meadows row',            sets: 3, reps: 8,  equip: 'Landmine · barbell',     muscle: 'back',      note: 'Each side' },
+          { id: 'fb-bss',      name: 'DB Bulgarian split squat',        sets: 3, reps: 8,  equip: 'Dumbbells',              muscle: 'quads',     note: 'Each leg' },
+          { id: 'fb-preacher', name: 'Curl bar preacher curl',          sets: 3, reps: 8,  equip: 'Curl bar',               muscle: 'biceps' },
+          { id: 'fb-trioh',    name: 'Cable overhead tricep extension', sets: 3, reps: 8,  equip: 'Cable machine',          muscle: 'triceps' },
+          { id: 'fb-facepull', name: 'Cable face pull',                 sets: 3, reps: 20, equip: 'Cable machine · rope',   muscle: 'rear-delts' },
+        ]
+      }
+    }
+  }
 };
+
+let activeProgramId = localStorage.getItem('liftlog_active_program') || 'ulu';
+let PROGRAM = PROGRAMS[activeProgramId].days;
+
+function switchProgram(id) {
+  activeProgramId = id;
+  localStorage.setItem('liftlog_active_program', id);
+  PROGRAM = PROGRAMS[id].days;
+  loadSavedProgram();
+  rebuildProgramCards();
+  renderProgramSwitcher();
+  renderProgram();
+  renderDayNames();
+  renderAllRecs();
+  checkDeload();
+}
+
+function rebuildProgramCards() {
+  // Rebuild the day card HTML dynamically based on active program
+  const dayColors = { push: 'dot-push', lower: 'dot-lower', pull: 'dot-pull', full: 'dot-push' };
+  const container = document.getElementById('page-program');
+  // Remove existing day cards and rec divs
+  container.querySelectorAll('.day-card, [id^="rec-"]').forEach(el => el.remove());
+  // Re-insert after deload banner
+  const deloadBanner = document.getElementById('deload-banner');
+  Object.entries(PROGRAM).forEach(([key, day]) => {
+    const recDiv = document.createElement('div');
+    recDiv.id = 'rec-' + key;
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.id = 'card-' + key;
+    card.innerHTML = `
+      <div class="day-header" id="header-${key}" onclick="toggleDay('card-${key}')">
+        <div class="day-dot ${dayColors[day.color] || 'dot-push'}"></div>
+        <div class="day-name" id="dayname-${key}">${day.name}</div>
+        <div class="day-meta" id="daymeta-${key}">${day.exercises.length} exercises</div>
+        <div class="day-chevron">›</div>
+      </div>
+      <button class="start-workout-btn" onclick="event.stopPropagation();startSession('${key}')">▶ Start Workout</button>
+      <div class="day-exercises" id="exercises-${key}"></div>`;
+    deloadBanner.after(recDiv);
+    recDiv.after(card);
+  });
+}
+
+
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let currentEx = null;
@@ -1867,6 +1968,7 @@ function toggleEditMode() {
 function renderProgram() {
   Object.entries(PROGRAM).forEach(([dayKey, day]) => {
     const container = document.getElementById('exercises-' + dayKey);
+    if (!container) return;
     if (editMode) {
       let html = buildDayNameEditRow(dayKey);
       html += day.exercises.map((ex, exIdx) => buildEditRow(dayKey, exIdx, ex)).join('');
@@ -2022,13 +2124,15 @@ function saveProgram() {
     Object.entries(PROGRAM).forEach(([k, day]) => {
       saveable[k] = { name: day.name, exercises: day.exercises.map(ex => ({...ex})) };
     });
-    localStorage.setItem('liftlog_program_v1', JSON.stringify(saveable));
+    localStorage.setItem('liftlog_program_' + activeProgramId + '_v1', JSON.stringify(saveable));
   } catch(e) {}
 }
 
 function loadSavedProgram() {
   try {
-    const saved = localStorage.getItem('liftlog_program_v1');
+    // Try new per-program key first, fall back to legacy key
+    const saved = localStorage.getItem('liftlog_program_' + activeProgramId + '_v1')
+      || (activeProgramId === 'ulu' ? localStorage.getItem('liftlog_program_v1') : null);
     if (!saved) return;
     const parsed = JSON.parse(saved);
     Object.entries(parsed).forEach(([k, day]) => {
@@ -2038,6 +2142,19 @@ function loadSavedProgram() {
       }
     });
   } catch(e) {}
+}
+
+function renderProgramSwitcher() {
+  const el = document.getElementById('program-switcher');
+  if (!el) return;
+  el.innerHTML = `<div class="program-switcher-label">Program</div>
+    <div class="program-chips">
+      ${Object.values(PROGRAMS).map(p => `
+        <div class="program-chip ${p.id === activeProgramId ? 'active' : ''}" onclick="switchProgram('${p.id}')">
+          <div class="program-chip-name">${p.name}</div>
+          <div class="program-chip-desc">${p.description}</div>
+        </div>`).join('')}
+    </div>`;
 }
 
 // ── BODYWEIGHT ────────────────────────────────────────────────────────────────
@@ -2294,6 +2411,11 @@ function renderDayNames() {
     if (el) el.textContent = day.name;
     if (metaEl) metaEl.textContent = day.exercises.length + ' exercises';
   });
+  // Update rec subtitles too
+  Object.entries(PROGRAM).forEach(([key, day]) => {
+    const recSub = document.querySelector(`#rec-card-${key} .rec-subtitle`);
+    if (recSub) recSub.textContent = day.name;
+  });
 }
 
 function buildDayNameEditRow(dayKey) {
@@ -2472,7 +2594,7 @@ function renderRecs(dayKey) {
 }
 
 function renderAllRecs() {
-  ['fri','sat','sun'].forEach(k => renderRecs(k));
+  Object.keys(PROGRAM).forEach(k => renderRecs(k));
 }
 
 // ── SUPERSETS ─────────────────────────────────────────────────────────────────
@@ -2542,11 +2664,14 @@ function getSupersetTimerDuration(groupId, dayKey) {
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function getAllData() {
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     workoutLog: JSON.parse(localStorage.getItem('liftlog_v1') || '[]'),
     bodyweightLog: JSON.parse(localStorage.getItem('liftlog_bw_v1') || '[]'),
     program: JSON.parse(localStorage.getItem('liftlog_program_v1') || 'null'),
+    programUlu: JSON.parse(localStorage.getItem('liftlog_program_ulu_v1') || 'null'),
+    programFb2: JSON.parse(localStorage.getItem('liftlog_program_fb2_v1') || 'null'),
+    activeProgram: activeProgramId,
     timerSettings: JSON.parse(localStorage.getItem('liftlog_timer_v1') || 'null'),
   };
 }
@@ -3139,6 +3264,11 @@ function finishSession() {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
 loadTimerSettings();
+renderProgramSwitcher();
+// If active program doesn't match static HTML cards, rebuild them first
+if (activeProgramId !== 'ulu') {
+  rebuildProgramCards();
+}
 renderProgram();
 renderDayNames();
 renderAllRecs();
