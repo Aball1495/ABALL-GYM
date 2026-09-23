@@ -1008,26 +1008,49 @@ function saveToLog(entry) {
   log.push(entry);
   localStorage.setItem('liftlog_v1', JSON.stringify(log));
 }
+function getExName(exId) {
+  // Look up exercise name from any program
+  for (const prog of Object.values(PROGRAMS)) {
+    for (const day of Object.values(prog.days)) {
+      const ex = day.exercises.find(e => e.id === exId);
+      if (ex) return ex.name.toLowerCase();
+    }
+  }
+  return null;
+}
 function getLastSets(exId) {
   const log = getLog();
+  const name = getExName(exId);
   for (let i = log.length - 1; i >= 0; i--) {
-    const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
+    // Match by ID first, then fall back to name match
+    const ex = log[i].exercises && (
+      log[i].exercises.find(e => e.id === exId) ||
+      (name && log[i].exercises.find(e => e.name.toLowerCase() === name))
+    );
     if (ex) return ex.sets.filter(s => !s.isWarmup);
   }
   return null;
 }
 function getLastExerciseLog(exId) {
   const log = getLog();
+  const name = getExName(exId);
   for (let i = log.length - 1; i >= 0; i--) {
-    const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
+    const ex = log[i].exercises && (
+      log[i].exercises.find(e => e.id === exId) ||
+      (name && log[i].exercises.find(e => e.name.toLowerCase() === name))
+    );
     if (ex) return ex;
   }
   return null;
 }
 function getLastSessionDate(exId) {
   const log = getLog();
+  const name = getExName(exId);
   for (let i = log.length - 1; i >= 0; i--) {
-    const ex = log[i].exercises && log[i].exercises.find(e => e.id === exId);
+    const ex = log[i].exercises && (
+      log[i].exercises.find(e => e.id === exId) ||
+      (name && log[i].exercises.find(e => e.name.toLowerCase() === name))
+    );
     if (ex) return log[i].date;
   }
   return null;
