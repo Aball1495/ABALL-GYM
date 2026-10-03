@@ -910,6 +910,8 @@ const PROGRAMS = {
 };
 
 let activeProgramId = localStorage.getItem('liftlog_active_program') || 'ulu';
+// Ensure stored program still exists, fall back to ulu if not
+if (!PROGRAMS[activeProgramId]) activeProgramId = 'ulu';
 let PROGRAM = PROGRAMS[activeProgramId].days;
 
 function switchProgram(id) {
@@ -3249,10 +3251,7 @@ function finishSession() {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
 loadTimerSettings();
-// If active program doesn't match static HTML cards, rebuild them first
-if (activeProgramId !== 'ulu') {
-  rebuildProgramCards();
-}
+// ULU is the only program — static HTML cards are always correct
 renderProgram();
 renderDayNames();
 renderAllRecs();
