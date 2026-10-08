@@ -458,6 +458,11 @@
   .program-chip-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .program-chip.active .program-chip-name { color: var(--accent); }
   .program-chip-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* EXERCISE DB LOADING */
+  .ex-db-status { font-size: 11px; color: var(--text3); padding: 4px 0 8px; }
+  .ex-db-status.loaded { color: var(--accent); }
+  .ex-db-status.error { color: #e04b4b; }
 </style>
 </head>
 <body>
@@ -847,13 +852,110 @@ const EXERCISE_LIBRARY = [
   {name:'Landmine anti-rotation',muscle:'core',ace:null},
 ];
 
+
+// ── REMOTE EXERCISE DATABASE ───────────────────────────────────────────────────
+// Public domain dataset: github.com/yuhonas/free-exercise-db (Unlicense)
+// jsdelivr mirrors GitHub with proper CORS headers
+const EXERCISE_DB_URL = '/ABALL-GYM/exercises.json';
+const EXERCISE_DB_CACHE_KEY = 'liftlog_exdb_v1';
+let remoteExercisesLoaded = false;
+let combinedLibrary = [...EXERCISE_LIBRARY]; // Start with our curated list
+
+// Map their muscle names to our muscle keys
+const MUSCLE_MAP = {
+  'chest': 'chest',
+  'biceps': 'biceps',
+  'triceps': 'triceps',
+  'forearms': 'biceps',
+  'shoulders': 'shoulders',
+  'traps': 'back',
+  'lats': 'lats',
+  'middle back': 'back',
+  'lower back': 'back',
+  'neck': 'shoulders',
+  'quadriceps': 'quads',
+  'hamstrings': 'hamstrings',
+  'glutes': 'glutes',
+  'calves': 'calves',
+  'abductors': 'glutes',
+  'adductors': 'glutes',
+  'abdominals': 'core',
+};
+
+function mapMuscle(m) {
+  return MUSCLE_MAP[(m || '').toLowerCase()] || 'core';
+}
+
+async function loadRemoteExerciseDB() {
+  try {
+    // Try localStorage cache first — avoids network on repeat opens
+    let data = null;
+    try {
+      const cached = localStorage.getItem(EXERCISE_DB_CACHE_KEY);
+      if (cached) {
+        data = JSON.parse(cached);
+      }
+    } catch(e) {}
+
+    if (!data) {
+      const res = await fetch(EXERCISE_DB_URL);
+      if (!res.ok) throw new Error('fetch failed');
+      data = await res.json();
+      // Cache for next time (exercises don't change often)
+      try { localStorage.setItem(EXERCISE_DB_CACHE_KEY, JSON.stringify(data)); } catch(e) {}
+    }
+
+    // Build set of names already in our curated library for deduplication
+    const curatedNames = new Set(EXERCISE_LIBRARY.map(e => e.name.toLowerCase()));
+
+    let added = 0;
+    data.forEach(ex => {
+      if (!ex.name) return;
+      const name = ex.name.replace(/_/g, ' ').trim();
+      if (curatedNames.has(name.toLowerCase())) return; // skip duplicates
+
+      const primaryMuscle = ex.primaryMuscles && ex.primaryMuscles[0]
+        ? mapMuscle(ex.primaryMuscles[0]) : 'core';
+
+      combinedLibrary.push({
+        name,
+        muscle: primaryMuscle,
+        ace: null,
+        remote: true
+      });
+      added++;
+    });
+
+    remoteExercisesLoaded = true;
+    console.log(`Remote exercise DB loaded: ${added} exercises added (${combinedLibrary.length} total)`);
+
+    // Update any open autocomplete
+    const statusEls = document.querySelectorAll('.ex-db-status');
+    statusEls.forEach(el => {
+      el.textContent = `${combinedLibrary.length} exercises available`;
+      el.className = 'ex-db-status loaded';
+    });
+
+  } catch(e) {
+    console.warn('Remote exercise DB unavailable, using built-in library only');
+    const statusEls = document.querySelectorAll('.ex-db-status');
+    statusEls.forEach(el => {
+      el.textContent = 'Using built-in library (' + EXERCISE_LIBRARY.length + ' exercises)';
+      el.className = 'ex-db-status error';
+    });
+  }
+}
+
 function searchLibrary(query) {
   if (!query || query.length < 2) return [];
   const q = query.toLowerCase();
-  return EXERCISE_LIBRARY
-    .filter(e => e.name.toLowerCase().includes(q))
-    .slice(0, 7);
+  // Search combined library, curated first then remote
+  const curated = EXERCISE_LIBRARY.filter(e => e.name.toLowerCase().includes(q));
+  const remote = combinedLibrary.filter(e => e.remote && e.name.toLowerCase().includes(q));
+  return [...curated, ...remote].slice(0, 10);
 }
+
+
 
 // ── PROGRAM DATA ──────────────────────────────────────────────────────────────
 const PROGRAMS = {
@@ -1501,6 +1603,7 @@ function confirmClear() {
     localStorage.removeItem('liftlog_v1');
     localStorage.removeItem('liftlog_bw_v1');
     localStorage.removeItem('liftlog_program_v1');
+    // Don't clear exercise DB cache — it's not user data
     renderProgram();
     renderHistory();
     renderProgress();
@@ -3251,6 +3354,7 @@ function finishSession() {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
 loadTimerSettings();
+loadRemoteExerciseDB(); // async, non-blocking
 // ULU is the only program — static HTML cards are always correct
 renderProgram();
 renderDayNames();
