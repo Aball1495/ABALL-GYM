@@ -2595,16 +2595,19 @@ function closeSwapOutside(e) {
   if (e.target === document.getElementById('swap-modal')) closeSwap();
 }
 
+
+
 function renderSwapList() {
-  const q = document.getElementById('swap-search').value.toLowerCase();
-  const results = q.length >= 1
-    ? EXERCISE_LIBRARY.filter(e => e.name.toLowerCase().includes(q))
-    : EXERCISE_LIBRARY;
+  const q = document.getElementById('swap-search').value;
+  const ql = q.toLowerCase().trim();
+  console.log('renderSwapList:', q, 'combinedLibrary:', combinedLibrary.length);
+  const results = ql.length >= 1
+    ? searchLibrary(q)
+    : combinedLibrary.slice(0, 20);
   document.getElementById('swap-modal-list').innerHTML = results.map(r => {
     const safeName = r.name.replace(/'/g, "\'");
     const aceBtn = r.ace ? `<a class="ace-link" href="${ACE_BASE}${r.ace}/" target="_blank" onclick="event.stopPropagation()" style="margin-left:8px">ACE ↗</a>` : '';
-    const q = document.getElementById('swap-search').value.toLowerCase();
-    const muscleMatch = q.length >= 2 && (r.muscle||'').toLowerCase().includes(q) && !r.name.toLowerCase().includes(q);
+    const muscleMatch = ql.length >= 2 && muscleMatchesQuery(r.muscle, ql) && !r.name.toLowerCase().includes(ql);
     return `<div class="swap-item" onclick="confirmSwap('${safeName}','${r.muscle}')">
       <div>
         <div class="swap-item-name">${r.name}</div>
