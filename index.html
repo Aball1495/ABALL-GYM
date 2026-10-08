@@ -296,7 +296,7 @@
 
   /* EXERCISE SWAP */
   .swap-btn { background: none; border: 1px solid var(--border); color: var(--text2); font-size: 12px; padding: 5px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
-  .swap-modal-list { padding: 8px 0; max-height: 50vh; overflow-y: auto; }
+  .swap-modal-list { padding: 8px 0; height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .swap-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; border-bottom: 0.5px solid var(--border); cursor: pointer; }
   .swap-item:active { background: var(--surface2); }
   .swap-item:last-child { border-bottom: none; }
@@ -997,7 +997,7 @@ function searchLibrary(query) {
   const remote = combinedLibrary.filter(e =>
     e.remote && (e.name.toLowerCase().includes(q) || muscleMatchesQuery(e.muscle, q))
   );
-  return [...curated, ...remote].slice(0, 15);
+  return [...curated, ...remote].slice(0, 50);
 }
 
 
@@ -2600,10 +2600,9 @@ function closeSwapOutside(e) {
 function renderSwapList() {
   const q = document.getElementById('swap-search').value;
   const ql = q.toLowerCase().trim();
-  console.log('renderSwapList:', q, 'combinedLibrary:', combinedLibrary.length);
   const results = ql.length >= 1
     ? searchLibrary(q)
-    : combinedLibrary.slice(0, 20);
+    : [...combinedLibrary].sort((a, b) => a.name.localeCompare(b.name));
   document.getElementById('swap-modal-list').innerHTML = results.map(r => {
     const safeName = r.name.replace(/'/g, "\'");
     const aceBtn = r.ace ? `<a class="ace-link" href="${ACE_BASE}${r.ace}/" target="_blank" onclick="event.stopPropagation()" style="margin-left:8px">ACE ↗</a>` : '';
