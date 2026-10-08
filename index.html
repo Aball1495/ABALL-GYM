@@ -471,7 +471,7 @@
   <div class="nav-inner">
     <div>
       <div class="nav-title">AL'S GYM</div>
-      <div class="nav-sub" id="nav-sub">ULU Program</div>
+      <div class="nav-sub" id="nav-sub">ULU · <span id="ex-count-badge">loading exercises...</span></div>
     </div>
     <div style="display:flex;gap:8px">
       <button class="nav-plate-btn" onclick="openPlate()">⚖ Plates</button>
@@ -896,6 +896,9 @@ async function loadRemoteExerciseDB() {
         data = JSON.parse(cached);
       }
     } catch(e) {}
+    // Show built-in count immediately while loading
+    const badgeEl = document.getElementById('ex-count-badge');
+    if (badgeEl) badgeEl.textContent = EXERCISE_LIBRARY.length + ' exercises';
 
     if (!data) {
       const res = await fetch(EXERCISE_DB_URL);
@@ -929,6 +932,10 @@ async function loadRemoteExerciseDB() {
     remoteExercisesLoaded = true;
     console.log(`Remote exercise DB loaded: ${added} exercises added (${combinedLibrary.length} total)`);
 
+    // Update nav badge
+    const badge = document.getElementById('ex-count-badge');
+    if (badge) badge.textContent = combinedLibrary.length + ' exercises';
+
     // Update any open autocomplete
     const statusEls = document.querySelectorAll('.ex-db-status');
     statusEls.forEach(el => {
@@ -938,6 +945,8 @@ async function loadRemoteExerciseDB() {
 
   } catch(e) {
     console.warn('Remote exercise DB unavailable, using built-in library only');
+    const badge = document.getElementById('ex-count-badge');
+    if (badge) badge.textContent = EXERCISE_LIBRARY.length + ' exercises';
     const statusEls = document.querySelectorAll('.ex-db-status');
     statusEls.forEach(el => {
       el.textContent = 'Using built-in library (' + EXERCISE_LIBRARY.length + ' exercises)';
