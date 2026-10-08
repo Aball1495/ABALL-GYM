@@ -856,7 +856,7 @@ const EXERCISE_LIBRARY = [
 // ── REMOTE EXERCISE DATABASE ───────────────────────────────────────────────────
 // Public domain dataset: github.com/yuhonas/free-exercise-db (Unlicense)
 // jsdelivr mirrors GitHub with proper CORS headers
-const EXERCISE_DB_URL = '/ABALL-GYM/exercises.json';
+const EXERCISE_DB_URL = 'https://aball1495.github.io/ABALL-GYM/exercises.json';
 const EXERCISE_DB_CACHE_KEY = 'liftlog_exdb_v1';
 let remoteExercisesLoaded = false;
 let combinedLibrary = [...EXERCISE_LIBRARY]; // Start with our curated list
@@ -901,8 +901,13 @@ async function loadRemoteExerciseDB() {
     if (badgeEl) badgeEl.textContent = EXERCISE_LIBRARY.length + ' exercises';
 
     if (!data) {
-      const res = await fetch(EXERCISE_DB_URL);
-      if (!res.ok) throw new Error('fetch failed');
+      const res = await fetch(EXERCISE_DB_URL, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'default',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       data = await res.json();
       // Cache for next time (exercises don't change often)
       try { localStorage.setItem(EXERCISE_DB_CACHE_KEY, JSON.stringify(data)); } catch(e) {}
@@ -944,7 +949,8 @@ async function loadRemoteExerciseDB() {
     });
 
   } catch(e) {
-    console.warn('Remote exercise DB unavailable, using built-in library only');
+    console.warn('Remote exercise DB unavailable:', e.message || e, e);
+    console.warn('Attempted URL:', EXERCISE_DB_URL);
     const badge = document.getElementById('ex-count-badge');
     if (badge) badge.textContent = EXERCISE_LIBRARY.length + ' exercises';
     const statusEls = document.querySelectorAll('.ex-db-status');
