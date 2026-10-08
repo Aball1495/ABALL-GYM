@@ -961,17 +961,43 @@ async function loadRemoteExerciseDB() {
   }
 }
 
+// Muscle search aliases — maps common search terms to our muscle keys
+const MUSCLE_ALIASES = {
+  'chest': 'chest', 'pec': 'chest', 'pecs': 'chest',
+  'back': 'back', 'lats': 'lats', 'lat': 'lats',
+  'shoulder': 'shoulders', 'shoulders': 'shoulders', 'delt': 'shoulders', 'delts': 'shoulders',
+  'rear delt': 'rear-delts', 'rear delts': 'rear-delts', 'rear': 'rear-delts',
+  'tricep': 'triceps', 'triceps': 'triceps', 'tri': 'triceps',
+  'bicep': 'biceps', 'biceps': 'biceps', 'bi': 'biceps',
+  'quad': 'quads', 'quads': 'quads', 'quadricep': 'quads', 'quadriceps': 'quads', 'leg': 'quads', 'legs': 'quads',
+  'hamstring': 'hamstrings', 'hamstrings': 'hamstrings', 'ham': 'hamstrings', 'hams': 'hamstrings',
+  'glute': 'glutes', 'glutes': 'glutes', 'butt': 'glutes', 'hip': 'glutes',
+  'calf': 'calves', 'calves': 'calves',
+  'core': 'core', 'abs': 'core', 'ab': 'core', 'abdominal': 'core', 'abdominals': 'core',
+};
+
+function muscleMatchesQuery(muscle, q) {
+  if (!muscle) return false;
+  const m = muscle.toLowerCase();
+  // Direct match
+  if (m.includes(q)) return true;
+  // Alias match — check if query maps to this muscle
+  const mapped = MUSCLE_ALIASES[q];
+  if (mapped && m === mapped) return true;
+  return false;
+}
+
 function searchLibrary(query) {
   if (!query || query.length < 2) return [];
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().trim();
   // Match on name OR muscle group, curated results first
   const curated = EXERCISE_LIBRARY.filter(e =>
-    e.name.toLowerCase().includes(q) || (e.muscle || '').toLowerCase().includes(q)
+    e.name.toLowerCase().includes(q) || muscleMatchesQuery(e.muscle, q)
   );
   const remote = combinedLibrary.filter(e =>
-    e.remote && (e.name.toLowerCase().includes(q) || (e.muscle || '').toLowerCase().includes(q))
+    e.remote && (e.name.toLowerCase().includes(q) || muscleMatchesQuery(e.muscle, q))
   );
-  return [...curated, ...remote].slice(0, 12);
+  return [...curated, ...remote].slice(0, 15);
 }
 
 
