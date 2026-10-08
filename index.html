@@ -964,10 +964,14 @@ async function loadRemoteExerciseDB() {
 function searchLibrary(query) {
   if (!query || query.length < 2) return [];
   const q = query.toLowerCase();
-  // Search combined library, curated first then remote
-  const curated = EXERCISE_LIBRARY.filter(e => e.name.toLowerCase().includes(q));
-  const remote = combinedLibrary.filter(e => e.remote && e.name.toLowerCase().includes(q));
-  return [...curated, ...remote].slice(0, 10);
+  // Match on name OR muscle group, curated results first
+  const curated = EXERCISE_LIBRARY.filter(e =>
+    e.name.toLowerCase().includes(q) || (e.muscle || '').toLowerCase().includes(q)
+  );
+  const remote = combinedLibrary.filter(e =>
+    e.remote && (e.name.toLowerCase().includes(q) || (e.muscle || '').toLowerCase().includes(q))
+  );
+  return [...curated, ...remote].slice(0, 12);
 }
 
 
@@ -2573,10 +2577,12 @@ function renderSwapList() {
   document.getElementById('swap-modal-list').innerHTML = results.map(r => {
     const safeName = r.name.replace(/'/g, "\'");
     const aceBtn = r.ace ? `<a class="ace-link" href="${ACE_BASE}${r.ace}/" target="_blank" onclick="event.stopPropagation()" style="margin-left:8px">ACE ↗</a>` : '';
+    const q = document.getElementById('swap-search').value.toLowerCase();
+    const muscleMatch = q.length >= 2 && (r.muscle||'').toLowerCase().includes(q) && !r.name.toLowerCase().includes(q);
     return `<div class="swap-item" onclick="confirmSwap('${safeName}','${r.muscle}')">
       <div>
         <div class="swap-item-name">${r.name}</div>
-        <div class="swap-item-muscle">${r.muscle}</div>
+        <div class="swap-item-muscle" style="${muscleMatch ? 'color:var(--accent)' : ''}">${r.muscle}${muscleMatch ? ' ←' : ''}</div>
       </div>
       <div style="display:flex;align-items:center">${aceBtn}</div>
     </div>`;
