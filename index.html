@@ -3091,17 +3091,31 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
     } else {
       const maxW = Math.max(...lastSets.map(s => parseFloat(s.weight)||0));
       const repsArr = lastSets.map(s => s.reps);
-      const allHit = lastSets.every(s => parseInt(s.reps) >= ex.reps);
-      const targetW = allHit ? maxW + 5 : maxW;
-      const action = allHit ? '↑ Go up' : '→ Stay';
-      lastSummaryHtml = `<div class="session-last-row">
-        <span class="session-last-label">Last (${lastDate})</span>
-        <span class="session-last-val">${maxW} lb · ${repsArr.join('/')} reps</span>
-      </div>
-      <div class="session-rec-row">
-        <span class="session-rec-label">${action} Target</span>
-        <span class="session-rec-val" style="color:${allHit ? 'var(--accent)' : 'var(--text2)'}">${targetW} lb × ${ex.reps} reps</span>
-      </div>`;
+      if (ex.s2f) {
+        // 2S2F exercises: show last weight and estimated 1RM only
+        const orm = get1RM(ex.id);
+        lastSummaryHtml = `<div class="session-last-row">
+          <span class="session-last-label">Last (${lastDate})</span>
+          <span class="session-last-val">${maxW} lb · ${repsArr.join('/')} reps</span>
+        </div>
+        <div class="session-rec-row">
+          <span class="session-rec-label">Est. 1RM</span>
+          <span class="session-rec-val" style="color:#e04b4b">${orm ? orm + ' lb' : '—'} → 70% = ${orm ? Math.round(orm * 0.7 / 2.5) * 2.5 + ' lb' : '—'}</span>
+        </div>`;
+      } else {
+        // Compound exercises: show +5 lb progression target
+        const allHit = lastSets.every(s => parseInt(s.reps) >= ex.reps);
+        const targetW = allHit ? maxW + 5 : maxW;
+        const action = allHit ? '↑ Go up' : '→ Stay';
+        lastSummaryHtml = `<div class="session-last-row">
+          <span class="session-last-label">Last (${lastDate})</span>
+          <span class="session-last-val">${maxW} lb · ${repsArr.join('/')} reps</span>
+        </div>
+        <div class="session-rec-row">
+          <span class="session-rec-label">${action} Target</span>
+          <span class="session-rec-val" style="color:${allHit ? 'var(--accent)' : 'var(--text2)'}">${targetW} lb × ${ex.reps} reps</span>
+        </div>`;
+      }
     }
   } else {
     lastSummaryHtml = `<div class="session-last-row"><span class="session-last-label">First session</span><span class="session-last-val">Start light, focus on form</span></div>`;
