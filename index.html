@@ -2294,9 +2294,41 @@ function saveProgram() {
   } catch(e) {}
 }
 
+
+// Compound exercises — everything else is treated as accessory (2S2F)
+const COMPOUND_IDS = ['bench','squat','pullup','rdl','row-over','lm-meadows','lm-press',
+  'inc-db','floor-press','ring-row','pendlay','fb-squat','fb-squat2','fb-bench',
+  'fb-row','fb-pullup','fb-rdl','fb-meadows','fb-incline'];
+
+function isCompoundEx(ex) {
+  if (ex.anchor) return true;
+  if (COMPOUND_IDS.includes(ex.id)) return true;
+  const n = (ex.name || '').toLowerCase();
+  // Barbell compounds and primary pulls/pushes are not accessories
+  if (n.includes('barbell') && (n.includes('squat') || n.includes('deadlift') || n.includes('bench') || n.includes('row') || n.includes('press'))) return true;
+  if (n.includes('pull-up') || n.includes('pullup') || n.includes('chin-up')) return true;
+  if (n.includes('ring row') || n.includes('floor press') || n.includes('db incline') || n.includes('landmine press') || n.includes('landmine meadows')) return true;
+  return false;
+}
+
+function reapplyS2FFlags() {
+  Object.values(PROGRAM).forEach(day => {
+    day.exercises.forEach(ex => {
+      ex.s2f = !isCompoundEx(ex);
+    });
+  });
+}
+
+const ANCHOR_IDS = ['bench','squat','pullup'];
+function reapplyAnchorSets() {
+  Object.values(PROGRAM).forEach(day => {
+    day.exercises.forEach(ex => {
+      if (ANCHOR_IDS.includes(ex.id)) ex.sets = 3;
+    });
+  });
+}
 function loadSavedProgram() {
   try {
-    // Try new per-program key first, fall back to legacy key
     const saved = localStorage.getItem('liftlog_program_' + activeProgramId + '_v1')
       || (activeProgramId === 'ulu' ? localStorage.getItem('liftlog_program_v1') : null);
     if (!saved) return;
@@ -2308,6 +2340,9 @@ function loadSavedProgram() {
       }
     });
   } catch(e) {}
+  // Always re-apply flags in case localStorage has stale data
+  reapplyS2FFlags();
+  reapplyAnchorSets();
 }
 
 function renderProgramSwitcher() {
@@ -3631,6 +3666,8 @@ function applySessionExEdit(exId) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
+reapplyS2FFlags();
+reapplyAnchorSets();
 loadTimerSettings();
 loadCustomExercisesIntoLibrary();
 loadRemoteExerciseDB(); // async, non-blocking
