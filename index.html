@@ -2970,6 +2970,9 @@ let activeSession = null; // { dayKey, startTime, sets: { exId: [{weight,reps,do
 let sessionElapsedInterval = null;
 
 function startSession(dayKey) {
+  // Always re-apply flags fresh before building session sets
+  reapplyS2FFlags();
+  reapplyAnchorSets();
   activeSession = {
     dayKey,
     startTime: Date.now(),
