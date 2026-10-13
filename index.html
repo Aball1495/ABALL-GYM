@@ -463,6 +463,36 @@
   .ex-db-status { font-size: 11px; color: var(--text3); padding: 4px 0 8px; }
   .ex-db-status.loaded { color: var(--accent); }
   .ex-db-status.error { color: #e04b4b; }
+
+  /* 2S2F STYLES */
+  .s2f-badge { display: inline-block; font-size: 10px; font-weight: 700; background: rgba(224,75,75,0.15); color: #e04b4b; border: 1px solid rgba(224,75,75,0.3); border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.04em; }
+  .s2f-set-row { background: rgba(224,75,75,0.04); }
+  .s2f-set-row .session-set-num { color: #e04b4b; }
+  .s2f-drop-label { font-size: 11px; color: #e04b4b; padding: 4px 16px 2px; }
+  .s2f-info-box { background: rgba(224,75,75,0.06); border: 1px solid rgba(224,75,75,0.2); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 8px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .s2f-info-box strong { color: #e04b4b; }
+
+  /* CUSTOM EXERCISE CREATOR */
+  .custom-ex-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; padding-bottom: env(safe-area-inset-bottom, 20px); }
+  .custom-ex-form { padding: 12px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .custom-ex-input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 10px 12px; width: 100%; }
+  .custom-ex-input:focus { outline: none; border-color: var(--accent); }
+  .custom-ex-select { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; padding: 10px 12px; width: 100%; }
+  .custom-ex-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+  .custom-ex-list { max-height: 30vh; overflow-y: auto; border-top: 1px solid var(--border); }
+  .custom-ex-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 0.5px solid var(--border); }
+  .custom-ex-item-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .custom-ex-item-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .custom-ex-del { background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer; }
+  .custom-badge { display: inline-block; font-size: 10px; font-weight: 600; background: rgba(91,156,246,0.15); color: #5b9cf6; border: 1px solid rgba(91,156,246,0.3); border-radius: 4px; padding: 1px 5px; margin-left: 4px; }
+
+  /* INLINE SESSION EDITING */
+  .session-ex-edit-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-top: 1px solid var(--border); background: var(--surface2); flex-wrap: wrap; }
+  .session-ex-edit-input { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 6px 8px; flex: 1; min-width: 100px; }
+  .session-ex-edit-input:focus { outline: none; border-color: var(--accent); }
+  .session-ex-edit-num { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 6px 8px; width: 48px; text-align: center; -moz-appearance: textfield; }
+  .session-ex-edit-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .session-ex-edit-save { background: var(--accent); border: none; color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -475,6 +505,7 @@
     </div>
     <div style="display:flex;gap:8px">
       <button class="nav-plate-btn" onclick="openPlate()">⚖ Plates</button>
+      <button class="nav-plate-btn" onclick="openCustomEx()">✦ My Ex</button>
       <button class="edit-mode-btn" id="edit-mode-btn" onclick="toggleEditMode()">Edit</button>
       <button class="nav-btn" id="clear-btn" onclick="confirmClear()">Clear data</button>
     </div>
@@ -1014,13 +1045,13 @@ const PROGRAMS = {
     defaultName: 'Upper A',
     color: 'push',
     exercises: [
-      { id: 'bench',      name: 'Barbell bench press',           sets: 4, reps: 8,  equip: 'Barbell · weight rack',   muscle: 'chest',     anchor: true },
+      { id: 'bench',      name: 'Barbell bench press',           sets: 3, reps: 8,  equip: 'Barbell · weight rack',   muscle: 'chest',     anchor: true },
       { id: 'inc-db',     name: 'DB incline press',              sets: 3, reps: 8,  equip: 'Dumbbells',               muscle: 'chest',     supersetGroup: 'fri-ss1' },
       { id: 'row-over',   name: 'Barbell bent-over row',         sets: 3, reps: 8,  equip: 'Barbell',                 muscle: 'back',      supersetGroup: 'fri-ss1' },
       { id: 'lm-meadows', name: 'Landmine meadows row',          sets: 3, reps: 8,  equip: 'Landmine · barbell',      muscle: 'back',      note: 'Each side' },
       { id: 'lm-press',   name: 'Landmine press',                sets: 3, reps: 8,  equip: 'Landmine · barbell',      muscle: 'shoulders' },
-      { id: 'pushdown',   name: 'Cable tricep pushdown',         sets: 3, reps: 8,  equip: 'Cable machine',           muscle: 'triceps',   supersetGroup: 'fri-ss2' },
-      { id: 'cable-curl', name: 'Cable curl',                    sets: 3, reps: 8,  equip: 'Cable machine',           muscle: 'biceps',    supersetGroup: 'fri-ss2' },
+      { id: 'pushdown', s2f: true,   name: 'Cable tricep pushdown',         sets: 3, reps: 8,  equip: 'Cable machine',           muscle: 'triceps',   supersetGroup: 'fri-ss2' },
+      { id: 'cable-curl', s2f: true, name: 'Cable curl',                    sets: 3, reps: 8,  equip: 'Cable machine',           muscle: 'biceps',    supersetGroup: 'fri-ss2' },
     ]
   },
   sat: {
@@ -1028,13 +1059,13 @@ const PROGRAMS = {
     defaultName: 'Lower',
     color: 'lower',
     exercises: [
-      { id: 'squat',    name: 'Barbell back squat',        sets: 4, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'quads',     anchor: true },
+      { id: 'squat',    name: 'Barbell back squat',        sets: 3, reps: 8,  equip: 'Barbell · weight rack',    muscle: 'quads',     anchor: true },
       { id: 'rdl',      name: 'Romanian deadlift',         sets: 3, reps: 8,  equip: 'Open deadlift bar',        muscle: 'hamstrings' },
-      { id: 'lm-squat', name: 'Landmine squat',            sets: 3, reps: 8,  equip: 'Landmine · barbell',       muscle: 'quads' },
-      { id: 'band-curl',name: 'Band leg curl',             sets: 3, reps: 8,  equip: 'Long band · anchor',       muscle: 'hamstrings' },
-      { id: 'pull-thru',name: 'Cable pull-through',        sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'glutes' },
-      { id: 'bss',      name: 'DB Bulgarian split squat',  sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'quads',     note: 'Each leg' },
-      { id: 'calf',     name: 'Standing calf raise',       sets: 4, reps: 20, equip: 'Weight rack or dumbbells', muscle: 'calves' },
+      { id: 'lm-squat', s2f: true, name: 'Landmine squat',            sets: 3, reps: 8,  equip: 'Landmine · barbell',       muscle: 'quads' },
+      { id: 'band-curl', s2f: true,name: 'Band leg curl',             sets: 3, reps: 8,  equip: 'Long band · anchor',       muscle: 'hamstrings' },
+      { id: 'pull-thru', s2f: true,name: 'Cable pull-through',        sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'glutes' },
+      { id: 'bss', s2f: true,      name: 'DB Bulgarian split squat',  sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'quads',     note: 'Each leg' },
+      { id: 'calf', s2f: true,     name: 'Standing calf raise',       sets: 4, reps: 20, equip: 'Weight rack or dumbbells', muscle: 'calves' },
     ]
   },
   sun: {
@@ -1042,13 +1073,13 @@ const PROGRAMS = {
     defaultName: 'Upper B',
     color: 'pull',
     exercises: [
-      { id: 'pullup',       name: 'Band assisted pull-up',            sets: 4, reps: 8,  equip: 'Pull-up bar · long band',  muscle: 'lats',      anchor: true },
+      { id: 'pullup',       name: 'Band assisted pull-up',            sets: 3, reps: 8,  equip: 'Pull-up bar · long band',  muscle: 'lats',      anchor: true },
       { id: 'ring-row',     name: 'Ring row',                         sets: 3, reps: 8,  equip: 'Rings',                    muscle: 'back',      supersetGroup: 'sun-ss1' },
       { id: 'floor-press',  name: 'DB floor press',                   sets: 3, reps: 8,  equip: 'Dumbbells',                muscle: 'chest',     supersetGroup: 'sun-ss1' },
-      { id: 'preacher',     name: 'Curl bar preacher curl',           sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'biceps',    supersetGroup: 'sun-ss2' },
-      { id: 'cable-tri-oh', name: 'Cable overhead tricep extension',  sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'triceps',   supersetGroup: 'sun-ss2' },
-      { id: 'face-pull',    name: 'Cable face pull',                  sets: 3, reps: 20, equip: 'Cable machine · rope',     muscle: 'rear-delts', supersetGroup: 'sun-ss3' },
-      { id: 'rear-delt-fly',name: 'DB rear delt fly',                 sets: 3, reps: 15, equip: 'Dumbbells',                muscle: 'rear-delts', supersetGroup: 'sun-ss3' },
+      { id: 'preacher', s2f: true,     name: 'Curl bar preacher curl',           sets: 3, reps: 8,  equip: 'Curl bar',                 muscle: 'biceps',    supersetGroup: 'sun-ss2' },
+      { id: 'cable-tri-oh', s2f: true, name: 'Cable overhead tricep extension',  sets: 3, reps: 8,  equip: 'Cable machine',            muscle: 'triceps',   supersetGroup: 'sun-ss2' },
+      { id: 'face-pull', s2f: true,    name: 'Cable face pull',                  sets: 3, reps: 20, equip: 'Cable machine · rope',     muscle: 'rear-delts', supersetGroup: 'sun-ss3' },
+      { id: 'rear-delt-fly', s2f: true,name: 'DB rear delt fly',                 sets: 3, reps: 15, equip: 'Dumbbells',                muscle: 'rear-delts', supersetGroup: 'sun-ss3' },
     ]
   }
 }
@@ -2793,11 +2824,9 @@ function createNewSupersetGroup(dayKey, exIdx) {
 }
 
 function getSupersetTimerDuration(groupId, dayKey) {
-  // Supersets get longer rest — anchor group gets 3.5 min, others get 2 min
-  const exercises = PROGRAM[dayKey] ? PROGRAM[dayKey].exercises : [];
-  const hasAnchor = exercises.some(e => e.supersetGroup === groupId && e.anchor);
+  // Compound supersets get 90s flat rest
   const s = getTimerSettings();
-  return hasAnchor ? s.anchor + 30 : Math.round(s.compound * 1.5);
+  return 90;
 }
 
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
@@ -2916,17 +2945,18 @@ function startSession(dayKey) {
   // Pre-populate sets from last session as suggestions
   const day = PROGRAM[dayKey];
   day.exercises.forEach(ex => {
-    const last = getLastSets(ex.id);
     const lastWeight = getLastWorkingWeight(ex.id);
-    activeSession.sets[ex.id] = Array.from({length: ex.sets}, (_, i) => {
+    if (ex.s2f) {
+      activeSession.sets[ex.id] = init2S2FSets(ex);
+    } else {
       const isBand = isBandExercise(ex);
-      return {
+      activeSession.sets[ex.id] = Array.from({length: ex.sets}, (_, i) => ({
         weight: isBand ? '' : (lastWeight ? lastWeight + 5 : ''),
         reps: ex.reps,
         done: false,
         bands: []
-      };
-    });
+      }));
+    }
     activeSession.notes[ex.id] = '';
   });
 
@@ -3042,9 +3072,9 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
 
   return `<div class="session-ex-block" id="session-ex-${ex.id}" style="${inSuperset ? 'border-radius:0;box-shadow:none' : ''}" onclick="handleSessionExTap('${ex.id}')">
     <div class="session-ex-header">
-      <div class="session-ex-name">
+      <div class="session-ex-name" style="cursor:pointer" onclick="event.stopPropagation();toggleSessionExEdit('${ex.id}')">
         <div class="muscle-icon" style="width:28px;height:28px;flex-shrink:0">${muscleSVG(ex.muscle)}</div>
-        <span>${ex.name}${ex.anchor ? ' ★' : ''}</span>
+        <span>${ex.name}${ex.anchor ? ' ★' : ''}${ex.s2f ? '<span class="s2f-badge">2S2F</span>' : ''}</span>
         ${allDone ? '<span class="session-ex-done-badge">✓ Done</span>' : completedCount > 0 ? `<span class="session-ex-done-badge">${completedCount}/${sets.length}</span>` : ''}
         <div class="session-set-adjuster">
           <button onclick="adjustSessionSets('${ex.id}',-1)" class="session-adj-btn">−</button>
@@ -3074,6 +3104,7 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
 }
 
 function renderSessionSetRow(ex, i, s, isBand) {
+  if (s.s2fType) return render2S2FSetRow(ex, i, s, isBand);
   const exId = ex.id;
   if (isBand) {
     const bandDots = BAND_COLORS.map((b, bi) =>
@@ -3164,8 +3195,11 @@ function toggleSessionSet(exId, setIdx, exObj) {
             startTimer(15);
           }
         } else {
-          document.getElementById('timer-label').textContent = 'Rest — next set in';
-          startTimer(dur);
+          // Landmine exercises get 45s between sets (different muscles, shared bar)
+          const isLandmine = ex.equip && ex.equip.toLowerCase().includes('landmine') && !ex.supersetGroup;
+          const finalDur = isLandmine ? 45 : dur;
+          document.getElementById('timer-label').textContent = isLandmine ? 'Landmine switch →' : 'Rest — next set in';
+          startTimer(finalDur);
         }
       }
     }
@@ -3400,9 +3434,205 @@ function finishSession() {
   renderAllRecs();
 }
 
+
+// ── 2S2F PROTOCOL ─────────────────────────────────────────────────────────────
+function get2S2FWeights(exId) {
+  const lastWeight = getLastWorkingWeight(exId);
+  if (!lastWeight) return null;
+  const set1 = Math.round(lastWeight * 0.7 / 2.5) * 2.5;
+  const set2 = Math.round(set1 * 0.75 / 2.5) * 2.5; // ~25% drop
+  const set3 = Math.round(set2 * 0.85 / 2.5) * 2.5; // smaller drop for failure
+  return { set1, set2, set3 };
+}
+
+function init2S2FSets(ex) {
+  const weights = get2S2FWeights(ex.id);
+  if (!weights) {
+    return [
+      { weight: '', reps: 8,  done: false, s2fType: 'build',   bands: [] },
+      { weight: '', reps: 12, done: false, s2fType: 'drop',    bands: [] },
+      { weight: '', reps: 0,  done: false, s2fType: 'failure', bands: [] },
+    ];
+  }
+  return [
+    { weight: weights.set1, reps: 8,  done: false, s2fType: 'build',   bands: [] },
+    { weight: weights.set2, reps: 12, done: false, s2fType: 'drop',    bands: [] },
+    { weight: weights.set3, reps: 0,  done: false, s2fType: 'failure', bands: [] },
+  ];
+}
+
+function render2S2FSetRow(ex, i, s, isBand) {
+  const exId = ex.id;
+  const typeLabel = s.s2fType === 'build' ? '70% · 4-8 reps' : s.s2fType === 'drop' ? 'Drop · 12 reps' : 'Failure · max reps';
+  const typeColor = s.s2fType === 'failure' ? '#e04b4b' : s.s2fType === 'drop' ? '#f5a623' : 'var(--accent)';
+  const repPlaceholder = s.s2fType === 'failure' ? 'max' : s.reps || '';
+
+  if (isBand) {
+    const bandDots = BAND_COLORS.map((b, bi) =>
+      `<div class="session-band-dot ${(s.bands||[]).includes(bi) ? 'selected' : ''}"
+        style="background:${b.hex}" title="${b.name}"
+        onclick="toggleSessionBand('${exId}',${i})"></div>`
+    ).join('');
+    return `<div class="session-set-row s2f-set-row" id="srow-${exId}-${i}" style="${s.done ? 'opacity:0.6' : ''}">
+      <div class="session-set-num" style="color:${typeColor}">${i+1}</div>
+      <div class="session-set-inputs">
+        <div>
+          <div style="font-size:10px;color:${typeColor};margin-bottom:3px">${typeLabel}</div>
+          <div class="session-band-row">${bandDots}</div>
+        </div>
+        <input class="session-set-input" type="number" inputmode="numeric" value="${s.reps || ''}" placeholder="${repPlaceholder}"
+          onchange="activeSession.sets['${exId}'][${i}].reps=this.value" style="width:60px"/>
+        <span class="session-set-label">reps</span>
+      </div>
+      <button class="session-set-check ${s.done ? 'done' : ''}" onclick="toggleSessionSet('${exId}',${i},null)">
+        ${s.done ? '✓' : ''}
+      </button>
+      <button class="session-set-del" onclick="deleteSessionSet('${exId}',${i})">×</button>
+    </div>`;
+  }
+
+  return `<div class="session-set-row s2f-set-row" id="srow-${exId}-${i}" style="${s.done ? 'opacity:0.6' : ''}">
+    <div class="session-set-num" style="color:${typeColor}">${i+1}</div>
+    <div class="session-set-inputs">
+      <div style="font-size:10px;color:${typeColor};margin-bottom:2px">${typeLabel}</div>
+      <input class="session-set-input" type="number" inputmode="decimal" value="${s.weight || ''}" placeholder="lb"
+        onchange="activeSession.sets['${exId}'][${i}].weight=this.value"/>
+      <span class="session-set-label">lb</span>
+      <input class="session-set-input" type="number" inputmode="numeric" value="${s.reps || ''}" placeholder="${repPlaceholder}"
+        onchange="activeSession.sets['${exId}'][${i}].reps=this.value" style="width:60px"/>
+      <span class="session-set-label">reps</span>
+    </div>
+    <button class="session-set-check ${s.done ? 'done' : ''}" onclick="toggleSessionSet('${exId}',${i},null)">
+      ${s.done ? '✓' : ''}
+    </button>
+    <button class="session-set-del" onclick="deleteSessionSet('${exId}',${i})">×</button>
+  </div>`;
+}
+
+
+// ── CUSTOM EXERCISE LIBRARY ───────────────────────────────────────────────────
+const CUSTOM_EX_KEY = 'liftlog_custom_ex_v1';
+
+function getCustomExercises() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_EX_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function saveCustomExercise() {
+  const name = document.getElementById('custom-ex-name').value.trim();
+  const muscle = document.getElementById('custom-ex-muscle').value;
+  const equip = document.getElementById('custom-ex-equip').value.trim();
+  if (!name) return;
+  const customs = getCustomExercises();
+  const newEx = { id: 'custom-' + Date.now(), name, muscle, equip, custom: true };
+  customs.push(newEx);
+  localStorage.setItem(CUSTOM_EX_KEY, JSON.stringify(customs));
+  // Add to combined library for search
+  combinedLibrary.push({ ...newEx, remote: false });
+  document.getElementById('custom-ex-name').value = '';
+  document.getElementById('custom-ex-equip').value = '';
+  renderCustomExList();
+}
+
+function deleteCustomExercise(id) {
+  const customs = getCustomExercises().filter(e => e.id !== id);
+  localStorage.setItem(CUSTOM_EX_KEY, JSON.stringify(customs));
+  combinedLibrary = combinedLibrary.filter(e => e.id !== id);
+  renderCustomExList();
+}
+
+function renderCustomExList() {
+  const customs = getCustomExercises();
+  const el = document.getElementById('custom-ex-list');
+  if (!el) return;
+  if (!customs.length) {
+    el.innerHTML = '<div style="padding:12px 20px;font-size:13px;color:var(--text3)">No custom exercises yet.</div>';
+    return;
+  }
+  el.innerHTML = '<div style="padding:8px 20px 4px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:500">Your exercises</div>' +
+    '<div class="custom-ex-list">' +
+    customs.map(e => `<div class="custom-ex-item">
+      <div>
+        <div class="custom-ex-item-name">${e.name} <span class="custom-badge">Custom</span></div>
+        <div class="custom-ex-item-meta">${e.muscle} · ${e.equip || 'No equipment specified'}</div>
+      </div>
+      <button class="custom-ex-del" onclick="deleteCustomExercise('${e.id}')">×</button>
+    </div>`).join('') + '</div>';
+}
+
+function openCustomEx() {
+  renderCustomExList();
+  document.getElementById('custom-ex-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCustomEx() {
+  document.getElementById('custom-ex-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeCustomExOutside(e) {
+  if (e.target === document.getElementById('custom-ex-modal')) closeCustomEx();
+}
+
+function loadCustomExercisesIntoLibrary() {
+  const customs = getCustomExercises();
+  customs.forEach(e => {
+    if (!combinedLibrary.find(c => c.id === e.id)) {
+      combinedLibrary.push({ ...e, remote: false });
+    }
+  });
+}
+
+// ── FULL IN-SESSION EDITING ───────────────────────────────────────────────────
+function toggleSessionExEdit(exId) {
+  const editRow = document.getElementById('session-ex-edit-' + exId);
+  if (editRow) {
+    editRow.style.display = editRow.style.display === 'none' ? 'flex' : 'none';
+    return;
+  }
+  // Build edit row inline
+  const block = document.getElementById('session-ex-' + exId);
+  const day = PROGRAM[activeSession.dayKey];
+  const ex = day.exercises.find(e => e.id === exId);
+  if (!block || !ex) return;
+  const editDiv = document.createElement('div');
+  editDiv.className = 'session-ex-edit-row';
+  editDiv.id = 'session-ex-edit-' + exId;
+  editDiv.innerHTML = `
+    <input class="session-ex-edit-input" type="text" id="sedit-name-${exId}" value="${ex.name}" placeholder="Exercise name"/>
+    <input class="session-ex-edit-num" type="number" inputmode="numeric" id="sedit-sets-${exId}" value="${activeSession.sets[exId].length}" min="1" max="10"/>
+    <span style="font-size:12px;color:var(--text2)">sets</span>
+    <input class="session-ex-edit-num" type="number" inputmode="numeric" id="sedit-reps-${exId}" value="${ex.reps}" min="1" max="50"/>
+    <span style="font-size:12px;color:var(--text2)">reps</span>
+    <button class="session-ex-edit-save" onclick="applySessionExEdit('${exId}')">Save</button>`;
+  block.appendChild(editDiv);
+}
+
+function applySessionExEdit(exId) {
+  const day = PROGRAM[activeSession.dayKey];
+  const ex = day.exercises.find(e => e.id === exId);
+  if (!ex) return;
+  const nameEl = document.getElementById('sedit-name-' + exId);
+  const setsEl = document.getElementById('sedit-sets-' + exId);
+  const repsEl = document.getElementById('sedit-reps-' + exId);
+  if (nameEl) ex.name = nameEl.value.trim() || ex.name;
+  if (repsEl) ex.reps = parseInt(repsEl.value) || ex.reps;
+  // Adjust sets count
+  const targetSets = parseInt(setsEl.value) || activeSession.sets[exId].length;
+  const current = activeSession.sets[exId];
+  while (current.length < targetSets) {
+    const last = current[current.length-1] || {};
+    current.push({ weight: last.weight || '', reps: ex.reps, done: false, bands: [] });
+  }
+  while (current.length > targetSets && current.length > 1) current.pop();
+  saveProgram();
+  renderSession();
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadSavedProgram();
 loadTimerSettings();
+loadCustomExercisesIntoLibrary();
 loadRemoteExerciseDB(); // async, non-blocking
 // ULU is the only program — static HTML cards are always correct
 renderProgram();
@@ -3556,6 +3786,7 @@ checkDeload();
       <button class="session-tool-btn" onclick="openTimerSettings()">⏱ Timer</button>
       <button class="session-tool-btn" id="ss-mode-btn" onclick="toggleSessionSSMode()">⇄ Superset</button>
       <button class="session-tool-btn" onclick="addSessionExercise()">+ Add</button>
+      <button class="session-tool-btn" onclick="openCustomEx()">✦ Custom</button>
     </div>
   </div>
   <div class="session-scroll" id="session-scroll"></div>
@@ -3570,6 +3801,49 @@ checkDeload();
     <div style="display:flex;gap:10px">
       <button class="btn btn-secondary" onclick="closeFinish()" style="flex:1">Keep going</button>
       <button class="btn btn-primary" onclick="finishSession()" style="flex:1">Save workout</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM EXERCISE MODAL -->
+<div class="modal-overlay" id="custom-ex-modal" onclick="closeCustomExOutside(event)">
+  <div class="custom-ex-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-title">My exercises</div>
+      <div class="modal-sub">Create custom exercises for your library</div>
+    </div>
+    <div class="custom-ex-form">
+      <div>
+        <div class="custom-ex-label">Exercise name</div>
+        <input class="custom-ex-input" type="text" id="custom-ex-name" placeholder="e.g. Seated calf raise machine"/>
+      </div>
+      <div>
+        <div class="custom-ex-label">Primary muscle</div>
+        <select class="custom-ex-select" id="custom-ex-muscle">
+          <option value="chest">Chest</option>
+          <option value="back">Back</option>
+          <option value="lats">Lats</option>
+          <option value="shoulders">Shoulders</option>
+          <option value="rear-delts">Rear delts</option>
+          <option value="triceps">Triceps</option>
+          <option value="biceps">Biceps</option>
+          <option value="quads">Quads</option>
+          <option value="hamstrings">Hamstrings</option>
+          <option value="glutes">Glutes</option>
+          <option value="calves">Calves</option>
+          <option value="core">Core</option>
+        </select>
+      </div>
+      <div>
+        <div class="custom-ex-label">Equipment</div>
+        <input class="custom-ex-input" type="text" id="custom-ex-equip" placeholder="e.g. Machine, Barbell, Dumbbells, Cable..."/>
+      </div>
+      <button class="btn btn-primary" onclick="saveCustomExercise()">Add exercise</button>
+    </div>
+    <div id="custom-ex-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeCustomEx()">Close</button>
     </div>
   </div>
 </div>
