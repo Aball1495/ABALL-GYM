@@ -3474,12 +3474,15 @@ function finishSession() {
 
 // ── 2S2F PROTOCOL ─────────────────────────────────────────────────────────────
 function get2S2FWeights(exId) {
+  // Use estimated 1RM as base, not raw max weight
+  const estimated1RM = get1RM(exId);
   const lastWeight = getLastWorkingWeight(exId);
-  if (!lastWeight) return null;
-  const set1 = Math.round(lastWeight * 0.7 / 2.5) * 2.5;
+  const base = estimated1RM || lastWeight;
+  if (!base) return null;
+  const set1 = Math.round(base * 0.7 / 2.5) * 2.5;
   const set2 = Math.round(set1 * 0.75 / 2.5) * 2.5; // ~25% drop
   const set3 = Math.round(set2 * 0.85 / 2.5) * 2.5; // smaller drop for failure
-  return { set1, set2, set3 };
+  return { set1, set2, set3, base, estimated1RM };
 }
 
 function init2S2FSets(ex) {
