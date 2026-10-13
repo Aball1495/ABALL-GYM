@@ -2288,7 +2288,11 @@ function saveProgram() {
   try {
     const saveable = {};
     Object.entries(PROGRAM).forEach(([k, day]) => {
-      saveable[k] = { name: day.name, exercises: day.exercises.map(ex => ({...ex})) };
+      saveable[k] = { name: day.name, exercises: day.exercises.map(ex => {
+        // Never persist s2f — always recomputed dynamically on load
+        const { s2f, ...rest } = ex;
+        return rest;
+      })};
     });
     localStorage.setItem('liftlog_program_' + activeProgramId + '_v1', JSON.stringify(saveable));
   } catch(e) {}
