@@ -2300,13 +2300,20 @@ function saveProgram() {
 
 
 // Compound exercises — everything else is treated as accessory (2S2F)
-// Only barbell bench press, barbell squat, and deadlift are compounds
+// Primary compound lifts — everything else is accessory (2S2F)
 function isCompoundEx(ex) {
   const n = (ex.name || '').toLowerCase();
+  // Barbell pressing
   if (n === 'barbell bench press') return true;
   if (n === 'barbell back squat') return true;
   if (n === 'barbell front squat') return true;
+  // Deadlifts
   if (n === 'deadlift' || n === 'barbell deadlift' || n === 'romanian deadlift') return true;
+  // Primary rows and pulls
+  if (n === 'barbell bent-over row') return true;
+  if (n === 'band assisted pull-up') return true;
+  if (n === 'pull-up' || n === 'weighted pull-up') return true;
+  if (n === 'landmine meadows row') return true;
   return false;
 }
 
