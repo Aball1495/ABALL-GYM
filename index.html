@@ -2148,10 +2148,29 @@ function renderProgram() {
   });
 }
 
+const EQUIP_OPTIONS = ['Barbell','Dumbbells','Cable machine','Landmine · barbell',
+  'Pull-up bar','Rings','Curl bar','Short band','Long band',
+  'Weight rack','Open deadlift bar','Machine','Bodyweight','Other'];
+
 function buildEditRow(dayKey, exIdx, ex) {
   const muscleOpts = MUSCLES.map(m =>
     `<option value="${m}" ${m === ex.muscle ? 'selected' : ''}>${m}</option>`
   ).join('');
+  const isBandEquip = (ex.equip || '').toLowerCase().includes('band');
+  const equipOpts = EQUIP_OPTIONS.map(e =>
+    `<option value="${e}" ${ex.equip === e ? 'selected' : ''}>${e}</option>`
+  ).join('');
+  const bandColorPicker = isBandEquip ? `
+    <div style="margin-top:8px">
+      <div class="ex-edit-label" style="margin-bottom:6px">Band color</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${BAND_COLORS.map((b, bi) => `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer" onclick="toggleEditBandColor('${dayKey}',${exIdx},${bi})">
+            <div style="width:28px;height:28px;border-radius:50%;background:${b.hex};border:3px solid ${(ex.defaultBands||[]).includes(bi) ? 'var(--accent)' : 'transparent'}"></div>
+            <div style="font-size:9px;color:var(--text3)">${b.name}</div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
   return `<div class="ex-edit-row">
     <div class="ex-edit-top">
       <div class="muscle-icon" id="eicon-${dayKey}-${exIdx}">${muscleSVG(ex.muscle)}</div>
@@ -2171,6 +2190,11 @@ function buildEditRow(dayKey, exIdx, ex) {
       <span class="ex-edit-label">Muscle</span>
       <select class="muscle-select" id="emuscle-${dayKey}-${exIdx}" onchange="updateMuscleIcon('${dayKey}',${exIdx})">${muscleOpts}</select>
     </div>
+    <div style="padding:6px 0 2px">
+      <span class="ex-edit-label">Equipment</span>
+      <select class="muscle-select" style="margin-top:4px" id="eequip-${dayKey}-${exIdx}" onchange="updateEquipField('${dayKey}',${exIdx})">${equipOpts}</select>
+    </div>
+    ${bandColorPicker}
     <div class="ex-edit-actions">
       <button class="swap-btn" onclick="openSwap('${dayKey}',${exIdx})">⇄ Swap</button>
       ${ex.supersetGroup
@@ -2181,6 +2205,25 @@ function buildEditRow(dayKey, exIdx, ex) {
       <button class="ex-edit-del" onclick="deleteExercise('${dayKey}',${exIdx})">Remove</button>
     </div>
   </div>`;
+}
+
+function updateEquipField(dayKey, exIdx) {
+  const el = document.getElementById('eequip-' + dayKey + '-' + exIdx);
+  if (!el) return;
+  PROGRAM[dayKey].exercises[exIdx].equip = el.value;
+  saveProgram();
+  // Re-render this row to show/hide band picker
+  renderProgram();
+}
+
+function toggleEditBandColor(dayKey, exIdx, bandIdx) {
+  const ex = PROGRAM[dayKey].exercises[exIdx];
+  if (!ex.defaultBands) ex.defaultBands = [];
+  const pos = ex.defaultBands.indexOf(bandIdx);
+  if (pos >= 0) ex.defaultBands.splice(pos, 1);
+  else ex.defaultBands.push(bandIdx);
+  saveProgram();
+  renderProgram();
 }
 
 function handleNameInput(dayKey, exIdx) {
@@ -2241,6 +2284,8 @@ function saveExerciseEdit(dayKey, exIdx) {
   if (setsEl) ex.sets = Math.max(1, parseInt(setsEl.value) || ex.sets);
   if (repsEl) ex.reps = Math.max(1, parseInt(repsEl.value) || ex.reps);
   if (muscleEl) ex.muscle = muscleEl.value;
+  const equipEl = document.getElementById('eequip-' + dayKey + '-' + exIdx);
+  if (equipEl) ex.equip = equipEl.value;
   saveProgram();
   renderProgram();
 }
