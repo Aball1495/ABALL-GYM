@@ -2187,12 +2187,12 @@ function buildEditRow(dayKey, exIdx, ex) {
       <input class="ex-edit-num" type="number" inputmode="numeric" value="${ex.sets}" id="esets-${dayKey}-${exIdx}" min="1" max="10"/>
       <span class="ex-edit-label">Reps</span>
       <input class="ex-edit-num" type="number" inputmode="numeric" value="${ex.reps}" id="ereps-${dayKey}-${exIdx}" min="1" max="50"/>
-      <span class="ex-edit-label">Muscle</span>
-      <select class="muscle-select" id="emuscle-${dayKey}-${exIdx}" onchange="updateMuscleIcon('${dayKey}',${exIdx})">${muscleOpts}</select>
     </div>
-    <div style="padding:6px 0 2px">
-      <span class="ex-edit-label">Equipment</span>
-      <select class="muscle-select" style="margin-top:4px" id="eequip-${dayKey}-${exIdx}" onchange="updateEquipField('${dayKey}',${exIdx})">${equipOpts}</select>
+    <div class="ex-edit-controls" style="margin-top:6px">
+      <span class="ex-edit-label">Muscle</span>
+      <select class="muscle-select" style="flex:1" id="emuscle-${dayKey}-${exIdx}" onchange="updateMuscleIcon('${dayKey}',${exIdx})">${muscleOpts}</select>
+      <span class="ex-edit-label">Equip</span>
+      <select class="muscle-select" style="flex:1" id="eequip-${dayKey}-${exIdx}" onchange="updateEquipField('${dayKey}',${exIdx})">${equipOpts}</select>
     </div>
     ${bandColorPicker}
     <div class="ex-edit-actions">
