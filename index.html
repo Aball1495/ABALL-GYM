@@ -2301,13 +2301,18 @@ const COMPOUND_IDS = ['bench','squat','pullup','rdl','row-over','lm-meadows','lm
   'fb-row','fb-pullup','fb-rdl','fb-meadows','fb-incline'];
 
 function isCompoundEx(ex) {
+  // Anchor lifts are always compound
   if (ex.anchor) return true;
+  // Explicit compound IDs
   if (COMPOUND_IDS.includes(ex.id)) return true;
   const n = (ex.name || '').toLowerCase();
-  // Barbell compounds and primary pulls/pushes are not accessories
-  if (n.includes('barbell') && (n.includes('squat') || n.includes('deadlift') || n.includes('bench') || n.includes('row') || n.includes('press'))) return true;
+  // Only true barbell primary lifts: squat, deadlift, bench press
+  if (n.includes('barbell') && (n.includes('squat') || n.includes('deadlift'))) return true;
+  if (n === 'barbell bench press') return true;
+  // Primary pulling compounds
   if (n.includes('pull-up') || n.includes('pullup') || n.includes('chin-up')) return true;
-  if (n.includes('ring row') || n.includes('floor press') || n.includes('db incline') || n.includes('landmine press') || n.includes('landmine meadows')) return true;
+  if (n === 'ring row' || n === 'db floor press') return true;
+  if (n === 'landmine meadows row') return true;
   return false;
 }
 
