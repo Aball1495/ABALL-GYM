@@ -523,12 +523,6 @@
   <!-- PROGRAM PAGE -->
   <div class="page active" id="page-program">
 
-    <div class="deload-banner" id="deload-banner">
-      <div class="deload-title">⚡ Deload week suggested</div>
-      <div class="deload-sub">You've been training consistently for 8+ weeks. Consider dropping volume and intensity by ~40% this week to recover and come back stronger.</div>
-    </div>
-
-    <div id="rec-fri"></div>
     <div class="day-card" id="card-fri">
       <div class="day-header" id="header-fri" onclick="toggleDay('card-fri')">
         <div class="day-dot dot-push"></div>
@@ -540,7 +534,6 @@
       <div class="day-exercises" id="exercises-fri"></div>
     </div>
 
-    <div id="rec-sat"></div>
     <div class="day-card" id="card-sat">
       <div class="day-header" id="header-sat" onclick="toggleDay('card-sat')">
         <div class="day-dot dot-lower"></div>
@@ -552,7 +545,6 @@
       <div class="day-exercises" id="exercises-sat"></div>
     </div>
 
-    <div id="rec-sun"></div>
     <div class="day-card" id="card-sun">
       <div class="day-header" id="header-sun" onclick="toggleDay('card-sun')">
         <div class="day-dot dot-pull"></div>
@@ -1101,7 +1093,6 @@ function switchProgram(id) {
   renderProgramSwitcher();
   renderProgram();
   renderDayNames();
-  renderAllRecs();
   checkDeload();
 }
 
@@ -1446,7 +1437,6 @@ function closeModal() {
   document.body.style.overflow = '';
   // Don't clear currentEx here — needed for saveSessionState key
   renderProgram();
-  renderAllRecs();
 }
 
 function closeModalOutside(e) {
@@ -1499,7 +1489,6 @@ function saveLog() {
   clearSessionState(currentDay, currentEx.id);
   closeModal();
   renderProgram();
-  renderAllRecs();
 }
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
@@ -2325,11 +2314,16 @@ function reapplyS2FFlags() {
   });
 }
 
-const ANCHOR_IDS = ['bench','squat','pullup'];
 function reapplyAnchorSets() {
   Object.values(PROGRAM).forEach(day => {
     day.exercises.forEach(ex => {
-      if (ANCHOR_IDS.includes(ex.id)) ex.sets = 3;
+      // All exercises should be 3 sets except calf raises (4x20)
+      if (ex.id === 'calf') {
+        ex.sets = 4;
+        ex.reps = 20;
+      } else if (ex.sets > 3) {
+        ex.sets = 3;
+      }
     });
   });
 }
@@ -2930,8 +2924,7 @@ This will replace your current data.`)) {
       loadSavedProgram();
       renderProgram();
       renderDayNames();
-      renderAllRecs();
-      renderDataStats();
+          renderDataStats();
       event.target.value = '';
     } catch(err) {
       showImportStatus("Failed to read file — make sure it is a valid JSON backup.", false);
@@ -3489,7 +3482,6 @@ function finishSession() {
   document.getElementById('session-overlay').classList.remove('active');
   document.body.style.overflow = '';
   renderProgram();
-  renderAllRecs();
 }
 
 
@@ -3700,7 +3692,6 @@ loadRemoteExerciseDB(); // async, non-blocking
 // ULU is the only program — static HTML cards are always correct
 renderProgram();
 renderDayNames();
-renderAllRecs();
 checkDeload();
 </script>
 
