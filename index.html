@@ -3145,17 +3145,19 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
           <span class="session-rec-val" style="color:#e04b4b">${orm ? orm + ' lb' : '—'} → 70% = ${orm ? Math.round(orm * 0.7 / 2.5) * 2.5 + ' lb' : '—'}</span>
         </div>`;
       } else {
-        // Compound exercises: show +5 lb progression target
-        const allHit = lastSets.every(s => parseInt(s.reps) >= ex.reps);
+        // Compound exercises: exclude last set (failure), check if working sets all hit 8
+        const workingSetsForRec = lastSets.length >= 3 ? lastSets.slice(0, -1) : lastSets;
+        const allHit = workingSetsForRec.length > 0 && workingSetsForRec.every(s => parseInt(s.reps) >= 8);
         const targetW = allHit ? maxW + 5 : maxW;
         const action = allHit ? '↑ Go up' : '→ Stay';
+        const lastRepsDisplay = lastSets.map(s => s.reps).join('/');
         lastSummaryHtml = `<div class="session-last-row">
           <span class="session-last-label">Last (${lastDate})</span>
-          <span class="session-last-val">${maxW} lb · ${repsArr.join('/')} reps</span>
+          <span class="session-last-val">${maxW} lb · ${lastRepsDisplay} reps</span>
         </div>
         <div class="session-rec-row">
           <span class="session-rec-label">${action} Target</span>
-          <span class="session-rec-val" style="color:${allHit ? 'var(--accent)' : 'var(--text2)'}">${targetW} lb × ${ex.reps} reps</span>
+          <span class="session-rec-val" style="color:${allHit ? 'var(--accent)' : 'var(--text2)'}">${targetW} lb × 8/8/failure</span>
         </div>`;
       }
     }
@@ -3565,9 +3567,24 @@ function get2S2FWeights(exId) {
 }
 
 function initCompoundSets(ex) {
-  // 2×8 at working weight + 1 failure set at same weight
+  // Read last session to decide weight
+  const lastSets = getLastSets(ex.id);
   const lastWeight = getLastWorkingWeight(ex.id);
-  const w = lastWeight ? lastWeight + 5 : '';
+  if (!lastWeight) {
+    return [
+      { weight: '', reps: 8, done: false, compType: 'work' },
+      { weight: '', reps: 8, done: false, compType: 'work' },
+      { weight: '', reps: 0, done: false, compType: 'failure' },
+    ];
+  }
+  // Only count the working sets (non-failure) from last session
+  const workingSets = (lastSets || []).filter(s => !s.isWarmup && s.reps && parseInt(s.reps) > 0);
+  // Check if all working sets hit 8 reps (ignore failure/last set which may have less)
+  // Under new structure: first 2 sets are working sets, 3rd is failure
+  // Under old structure: could be 3 or 4 sets all at same weight
+  const regularSets = workingSets.length >= 3 ? workingSets.slice(0, -1) : workingSets; // exclude last set (failure)
+  const allHit = regularSets.length > 0 && regularSets.every(s => parseInt(s.reps) >= 8);
+  const w = allHit ? lastWeight + 5 : lastWeight;
   return [
     { weight: w, reps: 8, done: false, compType: 'work' },
     { weight: w, reps: 8, done: false, compType: 'work' },
