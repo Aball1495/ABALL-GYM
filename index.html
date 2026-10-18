@@ -2334,20 +2334,14 @@ function saveProgram() {
 
 
 // Compound exercises — everything else is treated as accessory (2S2F)
-// Primary compound lifts — everything else is accessory (2S2F)
+// TRUE compounds — only Barbell Bench Press, Barbell Squat, Barbell Deadlift
+// These get 2×8 + failure set structure. Everything else is 2S2F.
 function isCompoundEx(ex) {
   const n = (ex.name || '').toLowerCase();
-  // Barbell pressing
   if (n === 'barbell bench press') return true;
   if (n === 'barbell back squat') return true;
   if (n === 'barbell front squat') return true;
-  // Deadlifts
-  if (n === 'deadlift' || n === 'barbell deadlift' || n === 'romanian deadlift') return true;
-  // Primary rows and pulls
-  if (n === 'barbell bent-over row') return true;
-  if (n === 'band assisted pull-up') return true;
-  if (n === 'pull-up' || n === 'weighted pull-up') return true;
-  if (n === 'landmine meadows row') return true;
+  if (n === 'deadlift' || n === 'barbell deadlift') return true;
   return false;
 }
 
@@ -2355,6 +2349,7 @@ function reapplyS2FFlags() {
   Object.values(PROGRAM).forEach(day => {
     day.exercises.forEach(ex => {
       ex.s2f = !isCompoundEx(ex);
+      ex.compound = isCompoundEx(ex);
     });
   });
 }
@@ -3028,7 +3023,9 @@ function startSession(dayKey) {
   const day = PROGRAM[dayKey];
   day.exercises.forEach(ex => {
     const lastWeight = getLastWorkingWeight(ex.id);
-    if (ex.s2f) {
+    if (ex.compound) {
+      activeSession.sets[ex.id] = initCompoundSets(ex);
+    } else if (ex.s2f) {
       activeSession.sets[ex.id] = init2S2FSets(ex);
     } else {
       const isBand = isBandExercise(ex);
@@ -3170,7 +3167,7 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
     <div class="session-ex-header">
       <div class="session-ex-name" style="cursor:pointer" onclick="event.stopPropagation();toggleSessionExEdit('${ex.id}')">
         <div class="muscle-icon" style="width:28px;height:28px;flex-shrink:0">${muscleSVG(ex.muscle)}</div>
-        <span>${ex.name}${ex.anchor ? ' ★' : ''}${ex.s2f ? '<span class="s2f-badge">2S2F</span>' : ''}</span>
+        <span>${ex.name}${ex.anchor ? ' ★' : ''}${ex.compound ? '<span class="s2f-badge" style="background:rgba(200,241,53,0.15);color:var(--accent);border-color:rgba(200,241,53,0.3)">PO</span>' : ex.s2f ? '<span class="s2f-badge">2S2F</span>' : ''}</span>
         ${allDone ? '<span class="session-ex-done-badge">✓ Done</span>' : completedCount > 0 ? `<span class="session-ex-done-badge">${completedCount}/${sets.length}</span>` : ''}
         <div class="session-set-adjuster">
           <button onclick="adjustSessionSets('${ex.id}',-1)" class="session-adj-btn">−</button>
@@ -3199,7 +3196,31 @@ function renderSessionExBlock(ex, dayKey, inSuperset) {
   </div>`;
 }
 
+function renderCompoundSetRow(ex, i, s) {
+  const exId = ex.id;
+  const isFailure = s.compType === 'failure';
+  const typeLabel = isFailure ? 'Failure · max reps' : 'Working set · 8 reps';
+  const typeColor = isFailure ? '#e04b4b' : 'var(--accent)';
+  return `<div class="session-set-row s2f-set-row" id="srow-${exId}-${i}" style="${s.done ? 'opacity:0.6' : ''}">
+    <div class="session-set-num" style="color:${typeColor}">${i+1}</div>
+    <div class="session-set-inputs">
+      <div style="font-size:10px;color:${typeColor};margin-bottom:2px">${typeLabel}</div>
+      <input class="session-set-input" type="number" inputmode="decimal" value="${s.weight || ''}" placeholder="lb"
+        onchange="activeSession.sets['${exId}'][${i}].weight=this.value"/>
+      <span class="session-set-label">lb</span>
+      <input class="session-set-input" type="number" inputmode="numeric" value="${s.reps || ''}" placeholder="${isFailure ? 'max' : '8'}"
+        onchange="activeSession.sets['${exId}'][${i}].reps=this.value" style="width:60px"/>
+      <span class="session-set-label">reps</span>
+    </div>
+    <button class="session-set-check ${s.done ? 'done' : ''}" onclick="toggleSessionSet('${exId}',${i},null)">
+      ${s.done ? '✓' : ''}
+    </button>
+    <button class="session-set-del" onclick="deleteSessionSet('${exId}',${i})">×</button>
+  </div>`;
+}
+
 function renderSessionSetRow(ex, i, s, isBand) {
+  if (s.compType) return renderCompoundSetRow(ex, i, s);
   if (s.s2fType) return render2S2FSetRow(ex, i, s, isBand);
   const exId = ex.id;
   if (isBand) {
@@ -3541,6 +3562,17 @@ function get2S2FWeights(exId) {
   const set2 = Math.round(set1 * 0.75 / 2.5) * 2.5; // ~25% drop
   const set3 = Math.round(set2 * 0.85 / 2.5) * 2.5; // smaller drop for failure
   return { set1, set2, set3, base, estimated1RM };
+}
+
+function initCompoundSets(ex) {
+  // 2×8 at working weight + 1 failure set at same weight
+  const lastWeight = getLastWorkingWeight(ex.id);
+  const w = lastWeight ? lastWeight + 5 : '';
+  return [
+    { weight: w, reps: 8, done: false, compType: 'work' },
+    { weight: w, reps: 8, done: false, compType: 'work' },
+    { weight: w, reps: 0, done: false, compType: 'failure' },
+  ];
 }
 
 function init2S2FSets(ex) {
