@@ -421,7 +421,7 @@
   .finish-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 800; align-items: flex-end; }
   .finish-overlay.open { display: flex; }
   .finish-sheet { touch-action: manipulation; }
-  .finish-sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 20px); }
+  .finish-sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 40px); touch-action: manipulation; }
   .finish-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   .finish-sub { font-size: 14px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
   .finish-stats { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; }
@@ -3386,10 +3386,13 @@ function promptFinishSession() {
     <div class="finish-stat"><span>Sets completed</span><span class="finish-stat-val">${totalSets}</span></div>
     <div class="finish-stat"><span>Exercises</span><span class="finish-stat-val">${Object.keys(activeSession.sets).length}</span></div>`;
   document.getElementById('finish-overlay').classList.add('open');
+  document.getElementById('session-scroll').style.pointerEvents = 'none';
 }
 
 function closeFinish() {
   document.getElementById('finish-overlay').classList.remove('open');
+  const scroll = document.getElementById('session-scroll');
+  if (scroll) scroll.style.pointerEvents = '';
 }
 
 function closeFinishOutside(e) {
