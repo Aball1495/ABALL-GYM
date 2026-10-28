@@ -1212,6 +1212,25 @@ function getSuggestedNext(exId) {
   return { current: maxW, next: maxW + 5, reps: last[0] ? last[0].reps : currentEx.reps };
 }
 
+function getNextWeightPreview(ex) {
+  if (ex.compound) {
+    const lastSets = getLastSets(ex.id);
+    const lastWeight = getLastWorkingWeight(ex.id);
+    if (!lastWeight) return null;
+    const workingSets = lastSets ? (lastSets.length >= 3 ? lastSets.slice(0,-1) : lastSets) : [];
+    const allHit = workingSets.length > 0 && workingSets.every(s => parseInt(s.reps) >= 8);
+    return { weight: allHit ? lastWeight + 5 : lastWeight, arrow: allHit ? '↑' : '→' };
+  }
+  if (ex.s2f) {
+    const weights = get2S2FWeights(ex.id);
+    if (!weights) return null;
+    return { weight: weights.set1, arrow: '70%' };
+  }
+  const lastWeight = getLastWorkingWeight(ex.id);
+  if (!lastWeight) return null;
+  return { weight: lastWeight + 5, arrow: '↑' };
+}
+
 function renderExRow(dayKey, ex) {
   const last = getLastSets(ex.id);
   const lastText = last ? last.filter(s=>!s.isWarmup).map(s => s.weight ? s.weight + 'lb' : '—').join(' / ') : 'No history';
